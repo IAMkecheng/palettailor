@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+  <meta charset="utf-8">
+
+  <!-- Example based on http://bl.ocks.org/mbostock/3887118 -->
+  <!-- Coding style based on http://gist.github.com/mbostock/5977197 -->
+
+  <style>
+    body {
+      font: 11px sans-serif;
+    }
+
+    .axis path,
+    .axis line {
+      fill: none;
+      stroke: #000;
+      shape-rendering: crispEdges;
+    }
+
+    /* 
+    .dot {
+      stroke: #000;
+    } */
+
+    .label {
+      font-size: 16px;
+    }
+  </style>
+
+  <script type="text/javascript" src="../js/lib/jquery-3.2.1.min.js"></script>
+  <script type="text/javascript" src="../js/lib/d3.v4.min.js"></script>
+
+  <script type="text/javascript" src="js/flann.js"></script>
+  <script type="text/javascript" src="../js/lib/d3.color.min.js"></script>
+  <script type="text/javascript" src="../js/lib/c3.min.js"></script>
+  <script type="text/javascript" src="js/GA.js"></script>
+  <script type="text/javascript" src="../js/utils.js"></script>
+  <script type="text/javascript" src="../js/dataLoader.js"></script>
+  <script type="text/javascript" src="../js/distanceCalculator.js"></script>
+  <script type="text/javascript" src="../js/optimizeFunc.js"></script>
+  <script type="text/javascript" src="js/color-assignment.js"></script>
+
+</head>
+
+<body>
+  <div class="svgs_div"></div>
+
+  <script type="text/javascript">
+    var margin = {
+      top: 20,
+      right: 20,
+      bottom: 20,
+      left: 20
+    },
+      width = 400 - margin.left - margin.right,
+      height = 400 - margin.top - margin.bottom;
+    radius = 4;
+    let labelToClass;
+    let cd_weight, ns_weight, alpha_shape_metric, knng_metric;
+    let xScale, xMap, xAxis, yScale, yMap, yAxis;
+    let criterion_cd = -1.0;
+    let color_distance_metric_sign = true, class_distance_metric_sign = true, color_saliency_sign = false;
+    let bgcolor = "#fff";
+    let score_importance_weight = new Array(3);
+    score_importance_weight[0] = 1;
+    score_importance_weight[1] = 1;
+    score_importance_weight[2] = 1;
+    let color_names_checked;
+    let best_color_names = {
+      "brown": d3.rgb(100, 53, 0), "orange": d3.rgb(255, 118, 2), "yellow": d3.rgb(255, 246, 3), "red": d3.rgb(255, 30, 32),
+      "pink": d3.rgb(255, 147, 205), "blue": d3.rgb(5, 74, 255), "green": d3.rgb(14, 160, 46), "grey": d3.rgb(143, 136, 135),
+      "purple": d3.rgb(113, 0, 135), "black": d3.rgb(4, 11, 5), "white": d3.rgb(255, 255, 255)
+    };
+    let decline_rate_efficiency = 0.99, decline_rate_quality = 0.999, decline_rate = 0.99;
+
+    // color name lookup table
+    let color_name_map = {};
+    // color saliency range
+    let minE = -4.5, maxE = 0;
+    c3.load("../js/lib/c3_data.json");
+    for (var c = 0; c < c3.color.length; ++c) {
+      var x = c3.color[c];
+      color_name_map[[x.L, x.a, x.b].join(",")] = c;
+    }
+    function collectColorNames() {
+      let color_names_checked = [];
+      return color_names_checked;
+    }
+
+    Tableau_20_palette = ["#4E79A7", "#A0CBE8", "#F28E2B", "#FFBE7D", "#59A14F", "#8CD17D", "#B6992D", "#F1CE63", "#499894", "#86BCB6", "#E15759", "#FF9D9A", "#79706E", "#BAB0AC", "#D37295", "#FABFD2", "#B07AA1", "#D4A6C8", "#9D7660", "#D7B5A6"];
+    Tableau_10_palette = ["#4E79A7", "#F28E2B", "#E15759", "#76B7B2", "#59A14F", "#EDC948", "#B07AA1", "#FF9DA7", "#9C755F", "#BAB0AC"];
+    Colorgorical_Palettes = {
+      "6": [["#256676", "#9fd841", "#c3305d", "#2af464", "#723240", "#2fddce"],
+      ["#96e97c", "#90089c", "#23980d", "#93e0f0", "#0b5313", "#15dec5"],
+      ["#8de4d3", "#830c6f", "#7ace30", "#523d6e", "#abc8f5", "#284e37"],
+      ["#4f8c9d", "#bbcf7a", "#8541a0", "#1cf1a3", "#1c4585", "#20f53d"],
+      ["#21f0b6", "#3d4e92", "#5dc11e", "#3d99ce", "#285d28", "#65e6f9"]],
+      "7": [["#069668", "#ce213d", "#94d2cf", "#0b5313", "#62ecb6", "#7a3003", "#b6e45c"],
+      ["#68affc", "#1e7b20", "#5ce8ef", "#6f267e", "#71bd69", "#21638f", "#4cf32c"],
+      ["#32964d", "#7d1a6e", "#60df82", "#3a427d", "#51f310", "#f612a8", "#5089b7"],
+      ["#96e97c", "#851e39", "#56a150", "#276cb6", "#dab9ff", "#284e37", "#7ee7d3"],
+      ["#256676", "#78de4c", "#6a2786", "#72e5ef", "#1d6d1f", "#b2b2f9", "#1e438d"]],
+      "8": [[d3.lab(85, -15, -15), d3.lab(40, -40, 25), d3.lab(85, -45, 0), d3.lab(30, 0, -20), d3.lab(70, 65, -45), d3.lab(55, -15, -20), d3.lab(35, 55, -15), d3.lab(85, -15, 30)],
+      [d3.lab(40, 0, 30), d3.lab(75, -40, 45), d3.lab(45, 60, -45), d3.lab(80, -25, -15), d3.lab(30, -30, 15), d3.lab(80, 30, -30), d3.lab(35, 30, -60), d3.lab(70, 70, -45)],
+      [d3.lab(85, -30, -15), d3.lab(35, -35, 20), d3.lab(70, 10, -40), d3.lab(35, 45, -40), d3.lab(75, -45, 50), d3.lab(45, 5, -40), d3.lab(65, 50, -40), d3.lab(60, -25, -10)],
+      [d3.lab(85, -45, 15), d3.lab(30, 25, -20), d3.lab(85, -35, 75), d3.lab(30, 60, -50), d3.lab(65, -15, 30), d3.lab(45, -45, 30), d3.lab(70, 35, -35), d3.lab(40, 30, -70)],
+      [d3.lab(55, -45, 30), d3.lab(75, -20, -25), d3.lab(30, 30, -35), d3.lab(85, -55, 75), d3.lab(45, 60, -45), d3.lab(60, 15, -60), d3.lab(30, -30, 25), d3.lab(85, -55, 15)]],
+      "9": [["#208eb7", "#6fbe4a", "#c6266d", "#6ae7e6", "#346a34", "#c5d8dd", "#3a427d", "#e9b7e3", "#432ab7"],
+      ["#35618f", "#7fee3f", "#860967", "#56eead", "#b94403", "#75d5e1", "#20502e", "#f4a95c", "#13a64f"],
+      ["#208eb7", "#78de4c", "#334a56", "#b7d165", "#555ed0", "#298837", "#46ebdc", "#af2168", "#b3d9fa"],
+      ["#aee39a", "#3a427d", "#f09bf1", "#3588d1", "#db11ac", "#34daea", "#1c5f1e", "#afc6fe", "#7f2157"],
+      ["#96e97c", "#682dbd", "#77d6cf", "#255026", "#a4badd", "#559310", "#1a6587", "#f59ae7", "#456fe7"]],
+      "10": [["#52ef99", "#dc2192", "#219571", "#5920af", "#ffa8ff", "#3f436d", "#83e3f0", "#194f46", "#c6c0fe", "#732a66"],
+      ["#0cc0aa", "#165f28", "#8bd0eb", "#953890", "#36f459", "#3d84e3", "#56a221", "#26496d", "#d0bcfe", "#333dcd"],
+      ["#78b98f", "#8a501a", "#8bba32", "#953fd0", "#50e316", "#1255d3", "#f597fa", "#056e12", "#8dbcf9", "#563c66"],
+      ["#069668", "#3256c2", "#dab9ff", "#085782", "#bce333", "#8e0049", "#badadd", "#0b5313", "#57ecc0", "#a0581c"],
+      ["#01c472", "#fd4e8b", "#4a9171", "#b4dbe7", "#195036", "#3eeaef", "#584982", "#8fec2f", "#7a4523", "#fdc7cc"]]
+    }
+    /*
+     * value accessor - returns the value to encode for a given data object.
+     * scale - maps value to a visual display encoding, such as a pixel position.
+     * map function - maps from data value to display value
+     * axis - sets up axis
+     */
+
+    // setup x
+    xValue = function (d) {
+      return d.x;
+    } // data -> value
+    xScale = d3.scaleLinear().range([0, width]) // value -> display
+    xMap = function (d) {
+      return xScale(xValue(d));
+    } // data -> display
+    xAxis = d3.axisBottom().scale(xScale).ticks(0);
+
+    // setup y
+    yValue = function (d) {
+      return d.y;
+    } // data -> value
+    yScale = d3.scaleLinear().range([height, 0]) // value -> display
+    yMap = function (d) {
+      return yScale(yValue(d));
+    } // data -> display
+    yAxis = d3.axisLeft().scale(yScale).ticks(0);
+
+    // setup fill color
+    cValue = function (d) {
+      return d.label;
+    };
+    function getRandomInt(max) {
+      return Math.floor(Math.random() * Math.floor(max));
+    }
+
+    // define the line
+    let valueline = d3.line()
+      .x(function (d) {
+        return xScale(xValue(d));
+      })
+      .y(function (d) {
+        return yScale(yValue(d));
+      }).curve(d3.curveCatmullRom);
+
+    let total_palettes = [];
+    let count = 0;
+    //color = d3.scaleOrdinal(palettes);         // modified to change color palettes
+    function drawLinechart(data, svgText, palette, path, id) {
+
+      // add the graph canvas to the body of the webpage
+      var svg = d3.select(".svgs_div").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom);
+      if (id) {
+        svg.attr("id", id);
+      }
+
+      let linechart = svg.style("background-color", bgcolor)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+      // Add the valueline path.
+      linechart.selectAll('path')
+        .data(data).enter().append("path")
+        .attr("d", function (d) {
+          return valueline(d.p);
+        })
+        .attr("fill", "none")
+        .attr("stroke", function (d) {
+          return palette[labelToClass[cValue(d)]];
+        })
+        .style("stroke-width", radius);
+      // x-axis
+      linechart.append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + height + ")")
+        .call(xAxis);
+
+      // y-axis
+      linechart.append("g")
+        .attr("class", "y axis")
+        .call(yAxis);
+
+      linechart.append("text").attr("x", 0).attr("y", 0).text(svgText);
+
+      let tmp = new Array(palette.length);
+      for (let i = 0; i < palette.length; i++) {
+        let color = d3.rgb(palette[i]);
+        tmp[i] = fullColorHex(parseInt(color.r), parseInt(color.g), parseInt(color.b));
+      }
+
+      total_palettes.push({
+        "paletteId": count,
+        "paletteName": svgText,
+        "path": path,
+        "palette": tmp
+      });
+      count += 1;
+    }
+
+    // let files_list = ["6 classes.csv", "8 classes.csv", "10 classes.csv"];
+    let files_list = ["6.csv", "6-2.csv", "7.csv", "7-2.csv", "8.csv", "8-2.csv", "9.csv", "9-2.csv", "10.csv", "10-2.csv",];
+
+    let file_count = 0, iteration_count = 0;
+    let interval = setInterval(function () {
+      console.log(files_list[file_count]);
+      d3.text("./data/" + files_list[file_count], function (error, text) { //interleaved_100_200_10d_25_cramped_rotated-PCA
+        if (error) throw error;
+        let labelSet = new Set();
+        let data = d3.csvParseRows(text, function (d) {
+          if (!isNaN(d[0]) && !isNaN(d[1])) {
+            return d; //.map(Number);
+          }
+        }).map(function (d) { // change the array to an object, use the first two feature as the position
+          //source data
+          var row = {};
+          row.label = d[2];
+          labelSet.add(row.label);
+          row.x = +d[0];
+          row.y = +d[1];
+          return row;
+        });
+        labelToClass = getLabelToClassMapping(labelSet);
+        let linechart_source_data = [];
+        for (let point of data) {
+          if (linechart_source_data[labelToClass[point.label]] == undefined) {
+            linechart_source_data[labelToClass[point.label]] = { p: [], label: point.label };
+          }
+          linechart_source_data[labelToClass[point.label]].p.push({ x: point.x, y: point.y });
+        }
+        // Scale the range of the data
+        xScale.domain([d3.min(linechart_source_data, function (d) {
+          return d3.min(d.p, function (e) {
+            return e.x;
+          });
+        }), d3.max(linechart_source_data, function (d) {
+          return d3.max(d.p, function (e) {
+            return e.x;
+          });
+        })]);
+        yScale.domain([d3.min(linechart_source_data, function (d) {
+          return d3.min(d.p, function (e) {
+            return e.y;
+          });
+        }), d3.max(linechart_source_data, function (d) {
+          return d3.max(d.p, function (e) {
+            return e.y;
+          });
+        })]);
+
+
+        // process data
+        processData(linechart_source_data);
+        // ours
+        let palette = doOurs();
+        drawLinechart(linechart_source_data, "Ours", palette, files_list[file_count]);
+        // Tableau best
+        let [best_palette, worst_palette] = doColorAssignment(Tableau_10_palette, knng_metric);
+        drawLinechart(linechart_source_data, "Tableau best", best_palette.slice(0, labelSet.size), files_list[file_count]);
+        // Tableau worst
+        drawLinechart(linechart_source_data, "Tableau worst", worst_palette.slice(0, labelSet.size), files_list[file_count]);
+        // Colorgorical best
+        let cg_palettes = Colorgorical_Palettes[labelSet.size];
+        let [cg_best_palette, cg_worst_palette] = doColorAssignment(cg_palettes[getRandomInt(cg_palettes.length - 1)], knng_metric);
+        drawLinechart(linechart_source_data, "Colorgorical best", cg_best_palette, files_list[file_count]);
+        // Colorgorical worst
+        drawLinechart(linechart_source_data, "Colorgorical random", cg_worst_palette, files_list[file_count]);
+        file_count += 1;
+        if (file_count === files_list.length) {//files_count === files_lists.length
+          console.log(JSON.stringify(total_palettes));
+          clearInterval(interval);
+        }
+      });
+    }, 2000);
+
+
+  </script>
+  <script>
+    function processData(linechart_source_data) {
+
+      //interpolate line chart data
+      let interpolated_linechart_data = [];
+      let interpolated_points_step = 20;
+      for (let line of linechart_source_data) {
+        let line_path = line.p;
+        for (let i = 0; i < line_path.length - 1; i++) {
+          let x_0 = line_path[i].x, x_1 = line_path[i + 1].x;
+          let y_0 = line_path[i].y, y_1 = line_path[i + 1].y;
+          let interpolated_points_num = Math.floor(Math.sqrt((xScale(x_1) - xScale(x_0)) * (xScale(x_1) - xScale(x_0)) + (yScale(y_1) - yScale(y_0)) * (yScale(y_1) - yScale(y_0))) / interpolated_points_step);
+          interpolated_points_num = (interpolated_points_num > 0) ? interpolated_points_num : 1;
+          for (let j = 0; j < interpolated_points_num; j++) {
+            interpolated_linechart_data.push({ label: line.label, x: (x_1 - x_0) * j / interpolated_points_num + x_0, y: (y_1 - y_0) * j / interpolated_points_num + y_0 });
+          }
+        }
+        interpolated_linechart_data.push({ label: line.label, x: line_path[line_path.length - 1].x, y: line_path[line_path.length - 1].y });
+      }
+
+      //scatter plot
+      [knng_metric, ns_weight] = getVariablesForComputeScore(interpolated_linechart_data);
+      console.log("knng scatterplot distance:", knng_metric);
+      console.log("knng scatterplot contrast:", ns_weight);
+
+      alpha_shape_metric = calculateAlphaShape(interpolated_linechart_data, [[0, 0], [width, height]]);
+      console.log("alpha shape scatterplot distance:", cd_weight = alpha_shape_metric);
+    }
+    function doOurs() {
+      let class_number = Object.keys(labelToClass).length;
+      //get the lightness range
+      let lightnessRange = [35, 95];
+      let colors_scope = { "hue_scope": [0, 360], "lumi_scope": lightnessRange };
+      let start = new Date().getTime();
+      let best_color = simulatedAnnealing2FindBestPalette(class_number, (new_palette) => evaluatePalette(new_palette), colors_scope);
+      let end = new Date().getTime();
+      console.log((end - start) + "ms");
+      // drawLineChart(sa_array, "sa_iteration");
+
+      let used_palette = new Array(class_number);
+      for (let i = 0; i < class_number; i++) {
+        used_palette[i] = best_color.id[i];
+      }
+      return used_palette;
+    }
+    function doColorAssignment(palette, class_distance) {
+      let class_num = palette.length;
+      let distanceOf2Colors = calculateDistOf2Colors(palette);
+      //best
+      let ga = new GA(new Random(Date.now()),
+        class_num,
+        (a, b) => a - b,
+        (sigma) => E(sigma, class_distance, ns_weight, distanceOf2Colors),
+        (x) => x, 3000);
+      let sigmaAndScore = ga.compute();
+      console.log("best sigma:", sigmaAndScore);
+      let best_palette = palette.slice();
+      for (let i = 0; i < palette.length; i++) {
+        best_palette[i] = palette[sigmaAndScore.sigma[i]];
+      }
+
+      // worst
+      ga = new GA(new Random(Date.now()),
+        class_num,
+        (a, b) => -a + b,
+        (sigma) => E(sigma, class_distance, ns_weight, distanceOf2Colors),
+        (x) => - x, 3000);
+      sigmaAndScore = ga.compute();
+      console.log("worst sigma:", sigmaAndScore);
+
+      let worst_palette = palette.slice();
+      for (let i = 0; i < palette.length; i++) {
+        worst_palette[i] = palette[sigmaAndScore.sigma[i]];
+      }
+
+      return [best_palette, worst_palette];
+    }
+  </script>
+</body>
+
+</html>

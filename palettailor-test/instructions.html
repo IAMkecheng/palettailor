@@ -1,0 +1,221 @@
+<h2>Instructions</h2>
+<p>
+  To generate a palette, you can click " <i class="icon_folder-alt"></i> " to load your own data<span
+    style="color: red;">(Please format
+    your data to the Data Format Requirements)</span> or use our example data by click " <i
+    class="icon_folder-open_alt"></i> ". <br>
+  After loading data, result will automatically appears when ready. You can also click " <em>Generate</em> " to get a new palette.<br>
+  There are two different mode to generate a new palette: High Efficiency Mode<i><img class="icon_efficiency" title="High Efficiency"></i> and High Quality Mode<i><img class="icon_quality" title="High Quality"></i>. The difference between these two modes is iteration number: High Quality Mode has more iterations than High Efficiency Mode and takes longer time. <br>
+  Larger palettes will take longer time than smaller palettes to make.<br>
+</p>
+<hr />
+<h3 id="dataFormatRequirementId">Data Format Requirements</h3>
+<table style="width:100%;">
+  <colgroup>
+    <col style="width:33%">
+    </col>
+    <col style="width:34%">
+    </col>
+    <col style="width:33%">
+    </col>
+  </colgroup>
+  <tr>
+    <td>
+      <div style="margin: 20px">
+        <table border="1" style="text-align:center;">
+          <caption style="font-weight: bold; font-size: 20px; padding-bottom: 5px;text-align:center; color: #555">
+            Scatter Plot
+            Data</caption>
+          <colgroup>
+            <col style="width:40%">
+            </col>
+            <col style="width:40%">
+            </col>
+            <col style="width:20%">
+            </col>
+          </colgroup>
+          <thead>
+            <tr>
+              <th style="text-align:center;">x</th>
+              <th style="text-align:center;">y</th>
+              <th style="text-align:center;">label</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>7.2418</td>
+              <td>6.382</td>
+              <td>0</td>
+            </tr>
+            <tr>
+              <td>7.2839</td>
+              <td>8.1668</td>
+              <td>0</td>
+            </tr>
+            <tr>
+              <td>...</td>
+              <td>...</td>
+              <td>...</td>
+            </tr>
+            <tr>
+              <td>3.1234</td>
+              <td>6.5782</td>
+              <td>1</td>
+            </tr>
+            <tr>
+              <td>2.1234</td>
+              <td>5.5782</td>
+              <td>1</td>
+            </tr>
+            <tr>
+              <td>...</td>
+              <td>...</td>
+              <td>...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </td>
+    <td>
+      <div style="margin: 20px">
+        <table border="1" style="text-align:center;">
+          <caption style="font-weight: bold; font-size: 20px; padding-bottom: 5px;text-align:center; color: #555">Line
+            Chart
+            Data</caption>
+          <colgroup>
+            <col style="width:40%">
+            </col>
+            <col style="width:40%">
+            </col>
+            <col style="width:20%">
+            </col>
+          </colgroup>
+          <thead>
+            <tr>
+              <th style="text-align:center;">x</th>
+              <th style="text-align:center;">y</th>
+              <th style="text-align:center;">label</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>0</td>
+              <td>6.382</td>
+              <td>0</td>
+            </tr>
+            <tr>
+              <td>1</td>
+              <td>3.2456</td>
+              <td>0</td>
+            </tr>
+            <tr>
+              <td>...</td>
+              <td>...</td>
+              <td>...</td>
+            </tr>
+            <tr>
+              <td>7</td>
+              <td>8.382</td>
+              <td>0</td>
+            </tr>
+            <tr>
+              <td>0</td>
+              <td>8.1668</td>
+              <td>1</td>
+            </tr>
+            <tr>
+              <td>...</td>
+              <td>...</td>
+              <td>...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </td>
+    <td>
+      <div style="margin: 20px">
+        <table border="1" style="text-align:center;">
+          <caption style="font-weight: bold; font-size: 20px; padding-bottom: 5px;text-align:center; color: #555">Bar
+            Chart
+            Data</caption>
+          <colgroup>
+            <col style="width:40%">
+            </col>
+            <col style="width:40%">
+            </col>
+            <col style="width:20%">
+            </col>
+          </colgroup>
+          <thead>
+            <tr>
+              <th style="text-align:center;">x</th>
+              <th style="text-align:center;">y</th>
+              <th style="text-align:center;">label</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>0</td>
+              <td>6.382</td>
+              <td>0</td>
+            </tr>
+            <tr>
+              <td>1</td>
+              <td>3.2456</td>
+              <td>1</td>
+            </tr>
+            <tr>
+              <td>...</td>
+              <td>...</td>
+              <td>...</td>
+            </tr>
+            <tr>
+              <td>7</td>
+              <td>8.382</td>
+              <td>7</td>
+            </tr>
+            <tr>
+              <td>8</td>
+              <td>5.382</td>
+              <td>8</td>
+            </tr>
+            <tr>
+              <td>...</td>
+              <td>...</td>
+              <td>...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </td>
+  </tr>
+</table>
+
+<p>
+  Download example data here: <a onclick="saveTable('scatterplot.csv')" style="cursor:pointer">Scatterplot Example</a>, <a onclick="saveTable('linechart.csv')" style="cursor:pointer">Line Chart Example</a>, <a onclick="saveTable('barchart.csv')" style="cursor:pointer">Bar Chart Example</a>
+</p>
+
+<hr />
+
+<h3>Lightness Range Selection</h3>
+<p>You can change whether our system samples lighter or darker colors by
+  dragging the circles on either end of the lightness range marker.</p>
+
+<hr />
+
+<script>
+  function saveTable(name) {
+    d3.text("./data/" + name, function (error, text) { //interleaved_100_200_10d_25_cramped_rotated-PCA
+        if (error) throw error;
+        downloadFile(name, text);
+      });
+    }
+    function downloadFile(fileName, content) {
+      var aTag = document.createElement('a');
+      var blob = new Blob(['\ufeff' + content], { type: "text/csv" });
+      aTag.download = fileName;
+      aTag.href = URL.createObjectURL(blob);
+      aTag.click();
+      URL.revokeObjectURL(blob);
+    }
+</script>
