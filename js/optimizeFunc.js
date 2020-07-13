@@ -24,7 +24,7 @@ function doColorization() {
     console.log(color_blind_type);
 
     let best_color;
-    if (blank_pos.length === 0) {
+    if (blank_pos.length === 0 || blank_pos.length === class_number) {
         best_color = simulatedAnnealing2FindBestPalette(class_number, (new_palette) => evaluatePaletteTwice(new_palette), colors_scope);
     }
     else {
@@ -71,19 +71,19 @@ function evaluatePalette(palette) {
     let dis;
     for (let i = 0; i < palette.length; i++) {
         for (let j = i + 1; j < palette.length; j++) {
-            dis = d3_ciede2000(d3.lab(palette[i]), d3.lab(palette[j]));          
+            dis = d3_ciede2000(d3.lab(palette[i]), d3.lab(palette[j]));
             if (class_distance.get([i, j]) != undefined)
                 class_discriminability += class_distance.get([i, j]) * dis;
             let nd = getNameDifference(palette[i], palette[j]);
             name_difference += nd;
             color_discrimination_constraint = (color_discrimination_constraint > dis) ? dis : color_discrimination_constraint;
 
-            if(isNaN(class_discriminability) || isNaN(class_discriminability) || isNaN(class_discriminability)){
+            if (isNaN(class_discriminability) || isNaN(class_discriminability) || isNaN(class_discriminability)) {
                 class_discriminability = 0;
                 name_difference = 0;
                 color_discrimination_constraint = 0;
                 return 0;
-            }  
+            }
         }
         dis = d3_ciede2000(d3.lab(palette[i]), d3.lab(d3.rgb(bgcolor)));
         color_discrimination_constraint = (color_discrimination_constraint > dis) ? dis : color_discrimination_constraint;
@@ -92,7 +92,7 @@ function evaluatePalette(palette) {
         criterion_cd = class_discriminability;
     class_discriminability /= criterion_cd;
     name_difference /= palette.length * (palette.length - 1) * 0.25;
-    
+
     return (score_importance_weight[0] * class_discriminability + score_importance_weight[1] * name_difference + score_importance_weight[2] * (color_discrimination_constraint * 0.1));
 }
 

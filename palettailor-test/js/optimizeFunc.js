@@ -24,7 +24,7 @@ function doColorization() {
     console.log(color_blind_type);
 
     let best_color; let time_consumed = 0;
-    if (blank_pos.length === 0) {
+    if (blank_pos.length === 0 || blank_pos.length === class_number) {
         let start = new Date().getTime();
         best_color = simulatedAnnealing2FindBestPalette(class_number, (new_palette) => evaluatePaletteTwice(new_palette), colors_scope);
         let end = new Date().getTime();
@@ -142,7 +142,7 @@ function evaluatePaletteTwice(palette) {
  * @param {*} flag 
  */
 function simulatedAnnealing2FindBestPalette(palette_size, evaluateFunc, colors_scope = { "hue_scope": [0, 360], "lumi_scope": [25, 85] }, flag = true) {
-    decline_rate = 0.999
+    // decline_rate = 0.999
     let iterate_times = 0;
     //default parameters
     let max_temper = 100000,
@@ -152,6 +152,8 @@ function simulatedAnnealing2FindBestPalette(palette_size, evaluateFunc, colors_s
     cur_temper = max_temper;
     //generate a totally random palette
     let color_palette = getColorPaletteRandom(palette_size);
+    color_palette = Tableau_20_palette.slice(0, palette_size);
+    console.log("random");
     criterion_cd = -1.0;
     //evaluate the default palette
     let o = {
@@ -198,17 +200,18 @@ function simulatedAnnealing2FindBestPalette(palette_size, evaluateFunc, colors_s
             if (iterate_times > max_iteration_times) {
                 break;
             }
-            if (iterate_times % 1000 === 0) {
-                // push score, time, palette
-                let end = new Date().getTime();
-                let time_consumed = (end - start);
-                statics_time.push([iterate_times, preferredObj.score, preferredObj.id, time_consumed])
-            }
+            // if (iterate_times % 1000 === 0) {
+            //     // push score, time, palette
+            //     let end = new Date().getTime();
+            //     let time_consumed = (end - start);
+            //     statics_time.push([iterate_times, preferredObj.score, preferredObj.id, time_consumed])
+            // }
         }
 
         cur_temper *= dec;
     }
     console.log("total iteration times:", iterate_times, statics_time);
+    console.log("score is:", preferredObj.score);
 
     return preferredObj;
 }

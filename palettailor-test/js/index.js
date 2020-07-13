@@ -155,7 +155,7 @@ function renderResult() {
     appendPaletteResult(palette);
     data_changed_sign = false;
     // drawPalettes()
-    drawPalettesForDifferentIterationNumber()
+    // drawPalettesForDifferentIterationNumber()
     document.querySelector('#running').classList.add('hide')
   }, 0);
 }
