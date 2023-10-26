@@ -1,0 +1,1473 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Interactive Examples</title>
+    <script type="text/javascript" src="../../js/lib/d3.v4.min.js"></script>
+    <script type="text/javascript" src="../../js/utils.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/vega@5.22.1"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-lite@5.6.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-embed@6.21.0"></script>
+</head>
+
+<style>
+    div {
+        text-align: center;
+    }
+
+    /* svg {
+        transform: scale(0.5, 0.5);
+    } */
+
+    #matrix-div svg {
+        font: 10px sans-serif;
+        padding: 10px;
+    }
+
+    #matrix-div .axis,
+    #matrix-div .frame {
+        shape-rendering: crispEdges;
+    }
+
+    #matrix-div .axis line {
+        stroke: #ddd;
+    }
+
+    #matrix-div .axis path {
+        display: none;
+    }
+
+    #matrix-div .cell text {
+        font-weight: bold;
+        text-transform: capitalize;
+        fill: black;
+    }
+
+    #matrix-div .frame {
+        fill: none;
+        stroke: #aaa;
+    }
+
+    #d3v4matrixDiv circle {
+        fill-opacity: .7;
+    }
+
+    #d3v4matrixDiv circle.hidden {
+        fill: #ccc !important;
+    }
+
+    #d3v4matrixDiv .extent {
+        fill: #000;
+        fill-opacity: .125;
+        stroke: #fff;
+    }
+
+    button {
+        font-size: large;
+        background: #555;
+        color: #eee;
+        border: none;
+        border-radius: 5px;
+        width: 180px;
+        padding: 10px;
+        margin: 20px;
+        box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.2);
+        text-shadow: 3px 3px 3px rgba(0, 0, 0, 0.3);
+    }
+
+    button:hover {
+        background: #333;
+        color: #ccc;
+        box-shadow: 0 0 0 rgba(0, 0, 0, 0.2);
+        text-shadow: 0 0 0 rgba(0, 0, 0, 0.3);
+    }
+
+    /* Style the tab */
+    .tab {
+        font-size: large;
+        overflow: hidden;
+        border: 1px solid #ccc;
+        background-color: #f1f1f1;
+        text-align: center;
+    }
+
+    /* Style the buttons that are used to open the tab content */
+    .tab button {
+        background-color: inherit;
+        /* float: left; */
+        border: none;
+        outline: none;
+        cursor: pointer;
+        padding: 14px 16px;
+        transition: 0.3s;
+        color: #000;
+    }
+
+    /* Change background color of buttons on hover */
+    .tab button:hover {
+        background-color: #ddd;
+    }
+
+    /* Create an active/current tablink class */
+    .tab button.active {
+        background-color: #ccc;
+    }
+
+    /* Style the tab content */
+    .tabcontent {
+        display: none;
+        padding: 6px 12px;
+        border: 1px solid #ccc;
+        border-top: none;
+    }
+
+    .tabcontent {
+        animation: fadeEffect 1s;
+        /* Fading effect takes 1 second */
+    }
+
+    /* Go from zero to full opacity */
+    @keyframes fadeEffect {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    #divBorder {
+        border: 3px dashed #eee;
+        margin-top: 5px;
+        /* width: 560px;
+        height: 560px; */
+    }
+
+    #divBorderOur {
+        border: 6px solid #ccc;
+        margin-top: 5px;
+        /* width: 560px;
+        height: 560px; */
+    }
+</style>
+
+<body>
+    <div class="tab">
+        <button class="tablinks" onclick="openTab(event, 'fig-1-div')">Fig.1</button>
+        <button class="tablinks" onclick="openTab(event, 'fig-14-div')">Fig.14</button>
+        <button class="tablinks" onclick="openTab(event, 'fig-15-div')">Fig.15</button>
+        <button class="tablinks" onclick="openTab(event, 'fig-16-div')">Line Chart</button>
+        <button class="tablinks" onclick="openTab(event, 'matrix-div')">Scatterplot Matrix</button>
+        <button class="tablinks" onclick="openTab(event, 'multiview-div')">Multi-view</button>
+        <h3>For each example, we provide both legend selection and brushing selection. You can click the legend to
+            select a group of colors or brushing the interest points. </h3>
+    </div>
+
+    <div id="fig-1-div" class="tabcontent">
+        <h1>Fig.1 for Synthetic data with different highlighting methods</h1>
+        <div id="fig-1-div-left" style="width: 65%;display: inline-block;height: 1400px;"></div>
+        <div id="fig-1-div-right"
+            style="width: 30%;display: inline-block;vertical-align:top;margin-top: 200px;height: 1400px;"></div>
+    </div>
+
+    <div id="fig-14-div" class="tabcontent">
+        <h1>Fig.14 for Chromatic Background</h1>
+    </div>
+
+    <div id="fig-15-div" class="tabcontent">
+        <h1>Fig.15 for <a href="http://yann.lecun.com/exdb/mnist/" target="_blank">Mnist data</a> with different
+            highlighting methods</h1>
+        <div id="fig-15-div-left" style="width: 65%;display: inline-block;height: 1400px;"></div>
+        <div id="fig-15-div-right"
+            style="width: 30%;display: inline-block;vertical-align:top;margin-top: 200px;height: 1400px;"></div>
+    </div>
+
+    <div id="fig-16-div" class="tabcontent">
+        <h1>Fig.16 for <a href="https://archive.ics.uci.edu/ml/datasets/air+quality" target="_blank">Air Quality
+                Data</a> with Line Chart</h1>
+    </div>
+
+    <div id="matrix-div" class="tabcontent">
+        <h1>Interactive Scatterplot Matrix (Dataset from <a
+                href="https://towardsdatascience.com/seaborn-pairplot-enhance-your-data-understanding-with-a-single-plot-bf2f44524b22"
+                target="_blank">Force 2020 Machine Learning competition</a>)</h1>
+
+        <div id="d3v4matrixDiv" style="display: inline-block;border: 3px dashed #eee;">
+            <h3>
+                Tableau (default assignment) with <a href="https://bl.ocks.org/Fil/6d9de24b31cb870fed2e6178a120b17d"
+                    target="_blank">D3 Example</a> &
+                <a href="https://vega.github.io/vega/examples/brushing-scatter-plots/" target="_blank">Vega Example</a>
+            </h3>
+
+        </div>
+        <div id="tableauHighlighterDiv" style="display: inline-block;border: 3px dashed #eee;">
+            <h3>
+                Tableau (optimal assignment) with <a
+                    href="https://public.tableau.com/app/profile/neil.lord/viz/ParameterHighlight/Sheet1"
+                    target="_blank">Tableau
+                    Highlighter</a>
+            </h3>
+
+        </div>
+        <div id="ourDiv" style="display: inline-block;border: 6px solid #ccc;">
+            <h3>
+                Our Context-preserving Highlighting Method
+            </h3>
+
+        </div>
+    </div>
+
+    <div id="multiview-div" class="tabcontent">
+        <h1>Interactive Multi-View Displays From <a href="https://vega.github.io/vega-lite/examples/"
+                target="_blank">Vega-Lite Example Gallery</a></h1>
+        <div id="vegaLiteDiv" style="display: inline-block;border: 3px dashed #eee;">
+            <h3>
+                Refer to:
+                <a href="https://vega.github.io/vega-lite/examples/interactive_seattle_weather.html"
+                    target="_blank">Seattle Weather Exploration</a>
+            </h3>
+            <div id="vegaLiteDiv-render"></div>
+
+        </div>
+        <div id="ourMultiViewDiv" style="display: inline-block;border: 6px solid #ccc;">
+            <h3>
+                Our Context-preserving Highlighting Method
+            </h3>
+            <div id="ourMultiViewDiv-render"></div>
+        </div>
+    </div>
+</body>
+
+<script>
+    function openTab(evt, cityName) {
+        // Declare all variables
+        var i, tabcontent, tablinks;
+
+        // Get all elements with class="tabcontent" and hide them
+        tabcontent = document.getElementsByClassName("tabcontent");
+        for (i = 0; i < tabcontent.length; i++) {
+            tabcontent[i].style.display = "none";
+        }
+
+        // Get all elements with class="tablinks" and remove the class "active"
+        tablinks = document.getElementsByClassName("tablinks");
+        for (i = 0; i < tablinks.length; i++) {
+            tablinks[i].className = tablinks[i].className.replace(" active", "");
+        }
+
+        // Show the current tab, and add an "active" class to the button that opened the tab
+        document.getElementById(cityName).style.display = "block";
+        evt.currentTarget.className += " active";
+    }
+</script>
+<!-- 
+<script>
+    function resize() {
+        // document.body.style.width = '1920px';
+        // document.body.style.height = '1080px';
+        console.log("resize");
+
+        var winHeight = document.documentElement.clientHeight; //浏览器的高度
+        var winWidth = document.documentElement.clientWidth; //浏览器的宽度
+        console.log(winWidth, winHeight, window.screen.width, window.screen.height);
+        var sw = 3072 / 3840
+        var sh = 1920 / 2160
+        document.body.style.transition = 'all 0.5s'
+        document.body.style.transformOrigin = 'left top'
+        document.body.style.transform = `scale(${sw},${sw})`
+        document.body.style.WebkitTransform = `scale(${sw},${sw})`
+    }
+
+    window.onload = function () {
+        console.log("in");
+        resize()
+    };
+    //防抖，避免resize占用过多资源
+    (function () {
+        var throttle = function (type, name, obj) {
+            obj = obj || window;
+            var running = false;
+            var func = function () {
+                if (running) {
+                    return;
+                }
+                running = true;
+                requestAnimationFrame(function () {
+                    obj.dispatchEvent(new CustomEvent(name));
+                    running = false;
+                });
+            };
+            obj.addEventListener(type, func);
+        };
+
+        throttle("resize", "optimizedResize");
+    })();
+    // optimizedResize
+    window.addEventListener("optimizedResize", resize);
+</script> -->
+
+<script>
+
+    let screen_width = window.innerWidth,
+        screen_height = window.innerHeight
+    let scale_size = window.devicePixelRatio
+    document.body.style.zoom = 1 / 1.5
+    console.log("scale size", scale_size);
+    //global variables:
+    let svg_margin = {
+        top: 20,
+        right: 20,
+        bottom: 20,
+        left: 20
+    },
+        radius = 6,
+        svg_width = 500,
+        svg_height = 500,
+        SVGWIDTH = svg_width + svg_margin.left + svg_margin.right,
+        SVGHEIGHT = svg_height + svg_margin.top + svg_margin.bottom;
+
+    let bgcolor = "#fff"
+
+    Tableau_10_palette = ["#4e79a7", "#f28e2b", "#e15759", "#76b7b2", "#59a14f", "#edc948", "#b07aa1", "#ff9da7", "#9c755f", "#bab0ac"]
+    Tableau_10_palette_white = ["#d5dde5", "#f3e1ce", "#f0d6d7", "#dce8e7", "#d7e4d5", "#f2ebd4", "#e7dde4", "#f5e3e5", "#e3dcd8", "#e9e7e6"];
+    Tableau_10_palette_blue = ["#153477", "#333860", "#302d69", "#1c3f79", "#173b67", "#324266", "#273476", "#353a77", "#23336a", "#293e78"];
+
+
+    fig_1_palettailor = ["#1dff60", "#ff05d2", "#716cff", "#149919", "#f8f900", "#ff1325", "#28ffff", "#d0b0ee"]
+    fig_1_tableau_random = ["#76b7b2", "#ff9da7", "#59a14f", "#edc948", "#4e79a7", "#e15759", "#f28e2b", "#b07aa1"]
+    fig_1_tableau_optimal = ["#4e79a7", "#f28e2b", "#e15759", "#76b7b2", "#59a14f", "#edc948", "#b07aa1", "#ff9da7"]
+    fig_1_ours = ["#ecc300", "#ef617f", "#c693d6", "#287480", "#ff9301", "#3aa770", "#706c8c", "#7bc7e5", "#fff0ab", "#f9c9d3", "#e8d4ee", "#b1dfe6", "#ffd296", "#c0e9d4", "#d9d8e1", "#d8eef7"]
+
+    fig_14_ours = ["#e32995", "#e6b01a", "#0386dd", "#7be3f6", "#e54306", "#00aa26", "#ffa0ff", "#7152db", "#48092d", "#4c3a08", "#001d30", "#054854", "#310e01", "#00400e", "#590059", "#160b39"]
+
+    fig_15_palettailor = ["#6fdf28", "#fed0e6", "#2ef8ba", "#f8f800", "#fe0037", "#3168c1", "#9a41d2", "#a95109", "#00d1f3", "#fe60eb"]
+    fig_15_random_tableau = ['#f28e2b', '#4e79a7', '#76b7b2', '#9c755f', '#59a14f', '#b07aa1', '#e15759', '#edc948', '#ff9da7', '#bab0ac']
+    fig_15_optimal_tableau = ['#f28e2b', '#9c755f', '#e15759', '#edc948', '#59a14f', '#4e79a7', '#b07aa1', '#bab0ac', '#ff9da7', '#76b7b2']
+    fig_15_ours = ["#ed6600", "#4c9fff", "#ff2a34", "#31de62", "#009840", "#777198", "#4fdbcc", "#ffce38", "#ff78ff", "#9e53e8", "#ffdabf", "#bfdcff", "#ffe3e4", "#e0fae7", "#c7ffde", "#e9e8ee", "#cef5f0", "#fff5d8", "#ffc9ff", "#ebddfa"]
+
+    fig_16_line_tableau = ["#4e79a7", "#f28e2b", "#e15759", "#76b7b2", "#59a14f"]
+    fig_16_line_ours = ["#995f28", "#59a34b", "#da45e2", "#f8b91c", "#4abdff", "#f2dfcd", "#d8ebd4", "#f4c9f6", "#fdecc2", "#c0e8ff"]
+
+    function loadData(name, data) {
+        d3.text("../data/" + name, function (error, text) {
+            if (error) throw error;
+            let labelSet = new Set();
+            let source_data = d3.csvParseRows(text, function (d) {
+                if (!isNaN(d[0]) && !isNaN(d[1])) {
+                    return d; //.map(Number);
+                }
+            }).map(function (d) { // change the array to an object, use the first two feature as the position
+                //source data
+                var row = {};
+                row.label = d[2];
+                labelSet.add(row.label);
+                row.x = +d[0];
+                row.y = +d[1];
+                return row;
+            });
+            data.push(source_data)
+            let labelToClass = getLabelToClassMapping(labelSet);
+            data.push(labelToClass)
+
+            console.log(labelToClass);
+        });
+    }
+
+
+    function drawInteractiveScatterplot(data, divId, palette, title, labelToClass, isOpacity) {
+
+        let xScale, xMap, xAxis, yScale, yMap, yAxis;
+        xScale = d3.scaleLinear().range([0, svg_width]); // value -> display
+        xMap = function (d) {
+            return xScale(xValue(d));
+        }; // data -> display
+        xAxis = d3.axisBottom().scale(xScale).ticks(0);
+        yScale = d3.scaleLinear().range([svg_height, 0]); // value -> display
+        yMap = function (d) {
+            return yScale(yValue(d));
+        }; // data -> display
+        yAxis = d3.axisLeft().scale(yScale).ticks(0);
+
+        // using same scale
+        xScale.domain(d3.extent(data, xValue));
+        yScale.domain(d3.extent(data, yValue));
+
+        let div = d3.select("#" + divId).append("div").attr("id", "divBorder").style("display", "inline-block").style("margin-left", "10px")
+        if (title === "Our Context-preserving Highlighting") div.attr("id", "divBorderOur")
+        div.append("h3").text(title)
+        let scatterplot_svg = div.append("svg").attr("typeId", "scatter")
+            .attr("width", SVGWIDTH).attr("height", SVGHEIGHT);
+        let scatterplot = scatterplot_svg.style("background-color", bgcolor).append("g")
+            .attr("transform", "translate(" + svg_margin.left + "," + svg_margin.top + ")");
+
+        var brush = d3.brush()
+            .on("start", brushstart)
+            .on("brush", brushmove)
+            .on("end", brushend)
+            .extent([[0, 0], [svg_width, svg_height]]);
+        var brushCell;
+        // Clear the previously-active brush, if any.
+        function brushstart(p) {
+            if (brushCell !== this) {
+                d3.select(brushCell).call(brush.move, null);
+                brushCell = this;
+            }
+        }
+
+        // Highlight the selected circles.
+        function brushmove(p) {
+            var e = d3.brushSelection(this);
+
+            if (!isOpacity) {
+                scatterplot_svg.selectAll("circle").attr("fill", function (d) {
+                    return !e
+                        ? d3.select(this).attr("item-color")
+                        : ((
+                            e[0][0] > xMap(d) || xMap(d) > e[1][0]
+                            || e[0][1] > yMap(d) || yMap(d) > e[1][1]
+                        ) ? d3.select(this).attr("faint-color") : d3.select(this).attr("item-color"));
+                });
+            } else {
+                // opacity
+                scatterplot_svg.selectAll("circle").style("opacity", function (d) {
+                    return !e
+                        ? 1
+                        : ((
+                            e[0][0] > xMap(d) || xMap(d) > e[1][0]
+                            || e[0][1] > yMap(d) || yMap(d) > e[1][1]
+                        ) ? 0.2 : 1);
+                });
+            }
+        }
+
+        // If the brush is empty, select all circles.
+        function brushend() {
+            var e = d3.brushSelection(this);
+            if (e === null) scatterplot_svg.selectAll("circle").attr("fill", function (d) {
+                return d3.select(this).attr("item-color")
+            }).style("opacity", 1);
+        }
+
+        shift_click_flag = false
+        scatterplot_svg.on("click", function () {
+            if (d3.event.shiftKey) {
+                // console.log("Mouse+Shift pressed");
+                if (!shift_click_flag) {
+                    scatterplot.select("#point-group").raise()
+                    shift_click_flag = true
+                    scatterplot.selectAll("circle").attr("fill", function (d) {
+                        return d3.select(this).attr("faint-color")
+                    })
+                }
+            } else {
+                shift_click_flag = false
+                scatterplot.select("#point-group").lower()
+                scatterplot.selectAll("circle").attr("fill", function (d) {
+                    return d3.select(this).attr("item-color")
+                })
+            }
+        });
+        // draw dots
+        let dots = scatterplot.append("g").attr("id", "point-group").selectAll(".dot")
+            .data(data)
+            .enter().append("circle")
+            .attr("class", "dot")
+            .attr("id", function (d) {
+                return "class_" + labelToClass[cValue(d)];
+            })
+            .attr("r", radius)
+            .attr("cx", xMap)
+            .attr("cy", yMap)
+            .attr("fill", function (d) {
+                return palette[labelToClass[cValue(d)]];
+            })
+            .attr("item-color", function (d) {
+                return palette[labelToClass[cValue(d)]];
+            })
+            .attr("faint-color", function (d) {
+                return palette[labelToClass[cValue(d)] + palette.length / 2];
+            })
+            .on("click", function (d) {
+                console.log(xMap(d), yMap(d));
+                // console.log("click point");
+                d3.select(this).attr("fill", function (d) {
+                    return palette[labelToClass[cValue(d)]];
+                }).raise();
+            })
+
+        // scatterplot.call(brush).call(brush.move, [[svg_width * 1 / 3, svg_height * 1 / 3], [svg_width * 3 / 4, svg_height * 3 / 4]]);
+        scatterplot.call(brush)//.call(brush.move, [[152, 358], [425, 465]]);
+        // add the x Axis
+        scatterplot.append("g")
+            .attr("transform", "translate(0," + svg_height + ")")
+            .call(d3.axisBottom(xScale).tickFormat(""))
+
+        // add the y Axis
+        scatterplot.append("g")
+            .call(d3.axisLeft(yScale).tickFormat(""))
+
+        scatterplot_svg.select(".selection").style("fill-opacity", 0).style("stroke", "#ccc").style("stroke-width", "4")
+
+        // append the palette
+        let palette_results_div = div.append("div")
+        let palette_size = palette.length / 2
+        for (let i = 0; i < palette_size; i++) {
+            // assemble a color
+            let span = palette_results_div.append("span").attr("class", "rect").attr("id", "rect-" + i)
+                .style("width", "30px").style("height", "30px").style("display", "inline-block")
+                .style("margin-left", "10px").style("background", palette[i]).attr("color", palette[i])
+                .style("text-align", "center").style("padding", "5px").attr("isHighlighted", 0)
+                .on("click", function () {
+                    d3.select(this).attr("isHighlighted", 1 - d3.select(this).attr("isHighlighted"))
+                    if (+d3.select(this).attr("isHighlighted")) {
+                        d3.select(this)
+                            .style("border", "4px solid #444");
+                    } else {
+                        d3.select(this)
+                            .style("border", "0px solid #444");
+                    }
+                    if (!isOpacity)
+                        for (let j = 0; j < palette_size; j++) {
+                            if (!(+palette_results_div.select("#rect-" + j).attr("isHighlighted"))) {
+                                scatterplot_svg.selectAll("#class_" + j)
+                                    .attr("fill", function () {
+                                        return palette[j + palette_size];
+                                    })
+                            }
+                            else {
+                                scatterplot_svg.selectAll("#class_" + j)
+                                    .attr("fill", function () {
+                                        return palette[j];
+                                    })
+                                    .raise();
+                            }
+                        }
+                    else {
+                        for (let j = 0; j < palette_size; j++) {
+                            if (!(+palette_results_div.select("#rect-" + j).attr("isHighlighted"))) {
+                                scatterplot_svg.selectAll("#class_" + j)
+                                    .style("opacity", 0.2)
+                            }
+                            else {
+                                scatterplot_svg.selectAll("#class_" + j)
+                                    .style("opacity", 1)
+                                    .raise();
+                            }
+                        }
+                    }
+                })
+        }
+    }
+
+    function drawInteractiveLinechart(data, divId, palette, title, labelToClass, isOpacity) {
+        let xScale, xMap, xAxis, yScale, yMap, yAxis;
+        // set the ranges
+        xScale = d3.scaleLinear().range([0, svg_width]); // value -> display
+        xMap = function (d) {
+            return xScale(xValue(d));
+        }; // data -> display
+        xAxis = d3.axisBottom().scale(xScale).ticks(0);
+        yScale = d3.scaleLinear().range([svg_height, 0]); // value -> display
+        yMap = function (d) {
+            return yScale(yValue(d));
+        }; // data -> display
+        yAxis = d3.axisLeft().scale(yScale).ticks(0);
+
+        yScale.domain(d3.extent(data, function (d) {
+            return d.y;
+        }));
+
+        let div = d3.select("#" + divId).append("div").attr("id", "divBorder").style("display", "inline-block").style("margin-left", "10px")
+        if (title === "Our Context-preserving Highlighting") div.attr("id", "divBorderOur")
+        div.append("h3").text(title)
+
+        // append the palette
+        let palette_results_div = div.append("div")
+        let palette_size = palette.length / 2
+        for (let i = 0; i < palette_size; i++) {
+            // assemble a color
+            let span = palette_results_div.append("span").attr("class", "rect").attr("id", "rect-" + i)
+                .style("width", "30px").style("height", "30px").style("display", "inline-block")
+                .style("margin-left", "10px").style("background", palette[i]).attr("color", palette[i])
+                .style("text-align", "center").style("padding", "5px").attr("isHighlighted", 0)
+                .on("click", function () {
+                    d3.select(this).attr("isHighlighted", 1 - d3.select(this).attr("isHighlighted"))
+                    if (+d3.select(this).attr("isHighlighted")) {
+                        d3.select(this)
+                            .style("border", "4px solid #444");
+                    } else {
+                        d3.select(this)
+                            .style("border", "0px solid #444");
+                    }
+                    if (!isOpacity)
+                        for (let j = 0; j < palette_size; j++) {
+                            if (!(+palette_results_div.select("#rect-" + j).attr("isHighlighted"))) {
+                                linechart_svg.selectAll("#class_" + j)
+                                    .attr("stroke", function () {
+                                        return palette[j + palette_size];
+                                    })
+                            }
+                            else {
+                                linechart_svg.selectAll("#class_" + j)
+                                    .attr("stroke", function () {
+                                        return palette[j];
+                                    })
+                                    .raise();
+                            }
+                        }
+                    else {
+                        for (let j = 0; j < palette_size; j++) {
+                            if (!(+palette_results_div.select("#rect-" + j).attr("isHighlighted"))) {
+                                linechart_svg.selectAll("#class_" + j)
+                                    .style("opacity", 0.2)
+                            }
+                            else {
+                                linechart_svg.selectAll("#class_" + j)
+                                    .style("opacity", 1)
+                                    .raise();
+                            }
+                        }
+                    }
+                })
+        }
+
+
+        let linechart_svg = div.append("svg").attr("typeId", "line")
+            .attr("width", SVGWIDTH).attr("height", SVGHEIGHT);
+
+        let linechart = linechart_svg.style("background-color", bgcolor)
+            .append("g")
+            .attr("transform", "translate(" + svg_margin.left + "," + svg_margin.top + ")");
+
+        var brush = d3.brush()
+            .on("start", brushstart)
+            .on("brush", brushmove)
+            .on("end", brushend)
+            .extent([[0, 0], [svg_width, svg_height]]);
+        var brushCell;
+        // Clear the previously-active brush, if any.
+        function brushstart(p) {
+            // console.log("brush start");
+            if (brushCell !== this) {
+                d3.select(brushCell).call(brush.move, null);
+                brushCell = this;
+            }
+        }
+
+        let clip_id = "clip_" + new Date().getTime()
+        var clip = linechart_svg.append("defs").append("svg:clipPath")
+            .attr("id", clip_id)
+            .append("svg:rect")
+            .attr("width", svg_width)
+            .attr("height", svg_height)
+            .attr("x", 0)
+            .attr("y", 0);
+
+        var focus_chart = linechart_svg.append("g")
+            .attr("class", "focus")
+            .attr("transform", "translate(" + svg_margin.left + "," + svg_margin.top + ")")
+            .attr("clip-path", "url(#" + clip_id + ")");
+
+        // Highlight the selected circles.
+        function brushmove(p) {
+            // console.log("brush move");
+            var e = d3.brushSelection(this);
+            let x, y, width, height
+            if (!e) {
+                x = 0
+                y = 0
+                width = svg_width
+                height = svg_height
+            } else {
+                x = e[0][0]
+                y = e[0][1]
+                width = e[1][0] - x
+                height = e[1][1] - y
+            }
+            clip.attr("width", width)
+                .attr("height", height)
+                .attr("x", x)
+                .attr("y", y);
+        }
+
+        // If the brush is empty, select all circles.
+        function brushend() {
+            // console.log("brush end");
+            var e = d3.brushSelection(this);
+            if (e === null) {
+                focus_chart.selectAll('.linechart-focus').attr("stroke", function (d) {
+                    return d3.select(this).attr("item-color")
+                })
+                clip.attr("width", svg_width)
+                    .attr("height", svg_height)
+                    .attr("x", 0)
+                    .attr("y", 0);
+            }
+        }
+
+        // Scale the range of the data
+        xScale.domain(d3.extent(data, function (d) {
+            return d.x;
+        }));
+        // define the line
+        let valueline = d3.line()
+            .x(function (d) {
+                return xScale(d.x);
+            })
+            .y(function (d) {
+                return yScale(d.y);
+            }).curve(d3.curveCatmullRom);
+
+        let linechart_source_data = [],
+            tmp_keys = [],
+            count = 0;
+        for (let point of data) {
+            if (tmp_keys[labelToClass[point.label]] == undefined) {
+                tmp_keys[labelToClass[point.label]] = count++;
+                linechart_source_data[tmp_keys[labelToClass[point.label]]] = { p: [], label: point.label };
+            }
+            linechart_source_data[tmp_keys[labelToClass[point.label]]].p.push({ x: point.x, y: point.y });
+        }
+
+        // Add the valueline path.
+        linechart.selectAll('path')
+            .data(linechart_source_data).enter().append("path")
+            .attr("d", function (d) {
+                return valueline(d.p);
+            })
+            .attr("class", "linechart")
+            .attr("id", function (d) {
+                return "faint-class_" + labelToClass[cValue(d)];
+            })
+            .attr("fill", "none")
+            .attr("stroke", function (d) {
+                return palette[labelToClass[cValue(d)] + palette.length / 2];
+            })
+            .style("stroke-width", radius)
+            .attr("item-color", function (d) {
+                return palette[labelToClass[cValue(d)]];
+            })
+            .attr("faint-color", function (d) {
+                return palette[labelToClass[cValue(d)] + palette.length / 2];
+            })
+            .on("click", function (d) {
+
+
+            })
+
+        focus_chart.selectAll('.linechart-focus')
+            .data(linechart_source_data).enter().append("path")
+            .attr("d", function (d) {
+                return valueline(d.p);
+            })
+            .attr("class", "linechart-focus")
+            .attr("id", function (d) {
+                return "class_" + labelToClass[cValue(d)];
+            })
+            .attr("fill", "none")
+            .attr("stroke", function (d) {
+                return palette[labelToClass[cValue(d)]];
+            })
+            .style("stroke-width", radius)
+            .attr("item-color", function (d) {
+                return palette[labelToClass[cValue(d)]];
+            })
+            .attr("faint-color", function (d) {
+                return palette[labelToClass[cValue(d)] + palette.length / 2];
+            })
+
+        linechart.call(brush)//.call(brush.move, [[345, 10], [500, 335]]);
+
+        linechart_svg.select(".selection").style("fill-opacity", 0).style("stroke", "#ccc").style("stroke-width", "4")
+        // Add the X Axis
+        linechart.append("g")
+            .attr("transform", "translate(0," + svg_height + ")")
+            .call(d3.axisBottom(xScale).tickFormat(""));
+
+        // Add the Y Axis
+        linechart.append("g")
+            .call(d3.axisLeft(yScale).tickFormat(""));
+
+        linechart_svg.on("click", function () {
+            linechart_svg.selectAll(".linechart-focus")
+                .attr("stroke", function () {
+                    return d3.select(this).attr("item-color")
+                })
+            svg.selectAll(".barchart-focus")
+                .attr("fill", function () {
+                    return d3.select(this).attr("item-color")
+                })
+        });
+
+        div.append("br")
+        // append the bar chart
+        let bar_data = {}
+        for (let d of data) {
+            if (!bar_data[d.label]) bar_data[d.label] = 0
+            bar_data[d.label] += d.y
+        }
+        let bar_arr = []
+        for (let d in bar_data) {
+            bar_arr.push({
+                x: d,
+                y: bar_data[d],
+                label: d
+            })
+        }
+        var margin = { top: 20, right: 30, bottom: 40, left: 90 },
+            width = svg_width,
+            height = 360 - margin.top - margin.bottom;
+        // append the svg object to the body of the page
+        var bar_svg = div
+            .append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+        let svg = bar_svg.append("g")
+            .attr("transform",
+                "translate(" + margin.left + "," + margin.top + ")");
+
+        // Add X axis
+        var x = d3.scaleLinear()
+            .domain([0, d3.max(bar_arr, yValue)])
+            .range([0, width]);
+        svg.append("g")
+            .attr("transform", "translate(0," + height + ")")
+            .call(d3.axisBottom(x))
+            .selectAll("text")
+            // .attr("transform", "translate(-10,0)rotate(-45)")
+            .style("text-anchor", "end");
+
+        // Y axis
+        var y = d3.scaleBand()
+            .range([0, height])
+            .domain(bar_arr.map(function (d) { return d.x; }))
+            .padding(.1);
+        svg.append("g")
+            .call(d3.axisLeft(y))
+
+        //Bars
+        svg.selectAll("barchart-focus")
+            .data(bar_arr)
+            .enter()
+            .append("rect")
+            .attr("class", "barchart-focus")
+            .attr("id", function (d) {
+                return "class_" + labelToClass[cValue(d)];
+            })
+            .attr("x", x(0))
+            .attr("y", function (d) { return y(d.x); })
+            .attr("width", function (d) { return x(d.y); })
+            .attr("height", y.bandwidth())
+            .attr("fill", function (d) {
+                return palette[labelToClass[cValue(d)]];
+            })
+            .attr("item-color", function (d) {
+                return palette[labelToClass[cValue(d)]];
+            })
+            .attr("faint-color", function (d) {
+                return palette[labelToClass[cValue(d)] + palette.length / 2];
+            })
+            .on("click", function (d) {
+                for (let j = 0; j < palette_size; j++) {
+                    if (labelToClass[cValue(d)] === j) {
+                        linechart_svg.selectAll("#class_" + j)
+                            .attr("stroke", function () {
+                                return d3.select(this).attr("item-color")
+                            })
+                            .raise();
+                        svg.selectAll("#class_" + j)
+                            .attr("fill", function () {
+                                return d3.select(this).attr("item-color")
+                            })
+                            .raise();
+                    }
+                    else {
+                        linechart_svg.selectAll("#class_" + j)
+                            .attr("stroke", function () {
+                                return d3.select(this).attr("faint-color")
+                            })
+                        bar_svg.selectAll("#class_" + j)
+                            .attr("fill", function () {
+                                return d3.select(this).attr("faint-color")
+                            })
+                    }
+                }
+                // console.log("click the bar");
+                event.stopPropagation();
+            })
+
+        bar_svg.on("click", function () {
+            // console.log("svg");
+            linechart_svg.selectAll(".linechart-focus")
+                .attr("stroke", function () {
+                    return d3.select(this).attr("item-color")
+                })
+            bar_svg.selectAll(".barchart-focus")
+                .attr("fill", function () {
+                    return d3.select(this).attr("item-color")
+                })
+        });
+    }
+</script>
+
+<script>
+    // Fig.1 
+    fig_1_data = []
+    loadData("teaser-top.csv", fig_1_data)
+
+    function drawFigs(labelToClass) {
+        // Fig.1
+        Tableau_10_palette_muted = Tableau_10_palette_white
+        tableau_10 = {}
+        for (let i = 0; i < Tableau_10_palette.length; i++) {
+            tableau_10[Tableau_10_palette[i]] = Tableau_10_palette_muted[i]
+        }
+
+        let class_number = Object.keys(labelToClass).length
+        let used_palette = fig_1_tableau_random.slice()
+        for (let i = 0; i < class_number; i++) {
+            used_palette[i + class_number] = "#ccc"
+        }
+        drawInteractiveScatterplot(fig_1_data, "fig-1-div-left", used_palette, "Tableau (default assignment) with Canonical Highlighting", labelToClass)
+
+        used_palette = fig_1_palettailor.slice()
+        for (let i = 0; i < class_number; i++) {
+            let hsl = d3.hsl(used_palette[i])
+            used_palette[i + class_number] = d3.hsl(hsl.h, hsl.s, 0.9)
+        }
+        drawInteractiveScatterplot(fig_1_data, "fig-1-div-left", used_palette, "Palettailor with Lightness Adjustment", labelToClass)
+
+        d3.select("#fig-1-div-left").append("br")
+
+        used_palette = fig_1_palettailor.slice()
+        for (let i = 0; i < class_number; i++) {
+            used_palette[i + class_number] = used_palette[i]
+        }
+        drawInteractiveScatterplot(fig_1_data, "fig-1-div-left", used_palette, "Palettailor with Alpha Blending", labelToClass, 1)
+
+        used_palette = fig_1_tableau_optimal.slice()
+        for (let i = 0; i < class_number; i++) {
+            used_palette[i + class_number] = tableau_10[used_palette[i]]
+        }
+        drawInteractiveScatterplot(fig_1_data, "fig-1-div-left", used_palette, "Tableau (optimal assignment) with Tableau Highlighter", labelToClass)
+
+        used_palette = fig_1_ours.slice()
+        drawInteractiveScatterplot(fig_1_data, "fig-1-div-right", used_palette, "Our Context-preserving Highlighting", labelToClass)
+
+        // Fig.14
+        bgcolor = d3.rgb(9, 38, 110)
+
+        used_palette = fig_1_palettailor.slice()
+        for (let i = 0; i < class_number; i++) {
+            used_palette[i + class_number] = used_palette[i]
+        }
+        drawInteractiveScatterplot(fig_1_data, "fig-14-div", used_palette, "Palettailor with Alpha Blending", labelToClass, 1)
+
+        Tableau_10_palette_muted = Tableau_10_palette_blue
+        tableau_10 = {}
+        for (let i = 0; i < Tableau_10_palette.length; i++) {
+            tableau_10[Tableau_10_palette[i]] = Tableau_10_palette_muted[i]
+        }
+        used_palette = fig_1_tableau_optimal.slice()
+        for (let i = 0; i < class_number; i++) {
+            used_palette[i + class_number] = tableau_10[used_palette[i]]
+        }
+        drawInteractiveScatterplot(fig_1_data, "fig-14-div", used_palette, "Tableau (optimal assignment) with Tableau Highlighter", labelToClass)
+
+        used_palette = fig_14_ours.slice()
+        drawInteractiveScatterplot(fig_1_data, "fig-14-div", used_palette, "Our Context-preserving Highlighting", labelToClass)
+    }
+
+    const intervalId_1 = setInterval(function () {
+        if (fig_1_data.length > 0) {
+            let labelToClass = fig_1_data[1]
+            fig_1_data = fig_1_data[0]
+            clearInterval(intervalId_1)
+            drawFigs(labelToClass)
+        }
+    }, 500)
+
+
+    // Fig.15 
+    fig_15_data = []
+    loadData("mnist-1000.csv", fig_15_data)
+
+    function drawFigs15(labelToClass) {
+        bgcolor = "#fff"
+        // Fig.1
+        Tableau_10_palette_muted = Tableau_10_palette_white
+        tableau_10 = {}
+        for (let i = 0; i < Tableau_10_palette.length; i++) {
+            tableau_10[Tableau_10_palette[i]] = Tableau_10_palette_muted[i]
+        }
+
+        let class_number = Object.keys(labelToClass).length
+        let used_palette = fig_15_random_tableau.slice()
+        for (let i = 0; i < class_number; i++) {
+            used_palette[i + class_number] = "#ccc"
+        }
+        drawInteractiveScatterplot(fig_15_data, "fig-15-div-left", used_palette, "Tableau (default assignment) with Canonical Highlighting", labelToClass)
+
+        used_palette = fig_15_palettailor.slice()
+        for (let i = 0; i < class_number; i++) {
+            let hsl = d3.hsl(used_palette[i])
+            used_palette[i + class_number] = d3.hsl(hsl.h, hsl.s, 0.9)
+        }
+        drawInteractiveScatterplot(fig_15_data, "fig-15-div-left", used_palette, "Palettailor with Lightness Adjustment", labelToClass)
+
+        d3.select("#fig-15-div-left").append("br")
+        used_palette = fig_15_palettailor.slice()
+        for (let i = 0; i < class_number; i++) {
+            used_palette[i + class_number] = used_palette[i]
+        }
+        drawInteractiveScatterplot(fig_15_data, "fig-15-div-left", used_palette, "Palettailor with Alpha Blending", labelToClass, 1)
+
+        used_palette = fig_15_optimal_tableau.slice()
+        for (let i = 0; i < class_number; i++) {
+            used_palette[i + class_number] = tableau_10[used_palette[i]]
+        }
+        drawInteractiveScatterplot(fig_15_data, "fig-15-div-left", used_palette, "Tableau (optimal assignment) with Tableau Highlighter", labelToClass)
+
+        used_palette = fig_15_ours.slice()
+        drawInteractiveScatterplot(fig_15_data, "fig-15-div-right", used_palette, "Our Context-preserving Highlighting", labelToClass)
+
+    }
+
+    const intervalId_2 = setInterval(function () {
+        if (fig_15_data.length > 0) {
+            let labelToClass = fig_15_data[1]
+            fig_15_data = fig_15_data[0]
+            clearInterval(intervalId_2)
+            drawFigs15(labelToClass)
+        }
+    }, 500)
+
+
+    // Fig.16 
+    fig_16_data = []
+    loadData("AirQualityUCI.csv", fig_16_data)
+
+    function drawFigs16(labelToClass) {
+        bgcolor = "#fff"
+        svg_width = 700
+        svg_height = 500
+        SVGWIDTH = svg_width + svg_margin.left + svg_margin.right
+        SVGHEIGHT = svg_height + svg_margin.top + svg_margin.bottom
+
+        // Fig.1
+        Tableau_10_palette_muted = Tableau_10_palette_white
+        tableau_10 = {}
+        for (let i = 0; i < Tableau_10_palette.length; i++) {
+            tableau_10[Tableau_10_palette[i]] = Tableau_10_palette_muted[i]
+        }
+
+        let class_number = Object.keys(labelToClass).length
+        let used_palette = fig_16_line_tableau.slice()
+        for (let i = 0; i < class_number; i++) {
+            used_palette[i + class_number] = tableau_10[used_palette[i]]
+        }
+        drawInteractiveLinechart(fig_16_data, "fig-16-div", used_palette, "Tableau (optimal assignment) with Tableau Highlighter", labelToClass)
+
+        used_palette = fig_16_line_ours.slice()
+        drawInteractiveLinechart(fig_16_data, "fig-16-div", used_palette, "Our Context-preserving Highlighting", labelToClass)
+
+    }
+
+    const intervalId_3 = setInterval(function () {
+        if (fig_16_data.length > 0) {
+            let labelToClass = fig_16_data[1]
+            fig_16_data = fig_16_data[0]
+            clearInterval(intervalId_3)
+            drawFigs16(labelToClass)
+        }
+    }, 500)
+</script>
+
+<script>
+    // draw scatterplot matrix
+    function drawScatterplotMatrix(divId, palette) {
+        var size = 230,
+            padding = 20;
+
+        var x = d3.scaleLinear()
+            .range([padding / 2, size - padding / 2]);
+
+        var y = d3.scaleLinear()
+            .range([size - padding / 2, padding / 2]);
+
+        var xAxis = d3.axisBottom()
+            .scale(x)
+            .ticks(6);
+
+        var yAxis = d3.axisLeft()
+            .scale(y)
+            .ticks(6);
+
+        // var color = d3.scaleOrdinal(d3.schemeCategory10);
+        let getLabel = function (d) {
+            return d["LITH"]
+        }
+
+        d3.csv("../data/Xeek_Well_data (1).csv", function (error, data) {
+            if (error) throw error;
+
+            let labelSet = new Set();
+            data = data.filter(function (d) {
+                labelSet.add(getLabel(d))
+                return d['GR'] != '' && +d['GR'] <= 120 && d['NPHI'] != '' && d['DTC'] != '' && d['RHOB'] != ''
+            })
+            let labelToClass = getLabelToClassMapping(labelSet);
+
+            // console.log("filtered:", data);
+            var domainByTrait = {},
+                traits = d3.keys(data[0]).filter(function (d) {
+                    return d == "RHOB" || d == "GR" || d == "NPHI"// || d == "DTC";
+                }),
+                n = traits.length;
+
+            traits.forEach(function (trait) {
+                domainByTrait[trait] = d3.extent(data, function (d) { return +d[trait]; });
+            });
+            // data = output_data_global
+            // console.log("traits:", traits);
+
+            xAxis.tickSize(size * n);
+            yAxis.tickSize(-size * n);
+
+            var brush = d3.brush()
+                .on("start", brushstart)
+                .on("brush", brushmove)
+                .on("end", brushend)
+                .extent([[0, 0], [size, size]]);
+
+            var svg = d3.select("#" + divId).append("svg")
+                .attr("width", size * n + padding * 2)
+                .attr("height", size * n + padding * 2)
+                .append("g")
+                .attr("transform", "translate(" + padding + "," + padding / 2 + ")");
+
+            svg.selectAll(".x.axis")
+                .data(traits)
+                .enter().append("g")
+                .attr("class", "x axis")
+                .attr("transform", function (d, i) { return "translate(" + (n - i - 1) * size + ",0)"; })
+                .each(function (d) { x.domain(domainByTrait[d]); d3.select(this).call(xAxis); });
+
+            svg.selectAll(".y.axis")
+                .data(traits)
+                .enter().append("g")
+                .attr("class", "y axis")
+                .attr("transform", function (d, i) { return "translate(0," + i * size + ")"; })
+                .each(function (d) { y.domain(domainByTrait[d]); d3.select(this).call(yAxis); });
+
+            var cell = svg.selectAll(".cell")
+                .data(cross(traits, traits))
+                .enter().append("g")
+                .attr("class", "cell")
+                .attr("transform", function (d) { return "translate(" + (n - d.i - 1) * size + "," + d.j * size + ")"; })
+                .each(plot);
+
+            // Titles for the diagonal.
+            cell.filter(function (d) { return d.i === d.j; }).append("text")
+                .attr("x", padding)
+                .attr("y", padding)
+                .attr("dy", ".71em")
+                .text(function (d) { return d.x; });
+
+            cell.call(brush);
+
+            cell.selectAll(".selection").style("fill-opacity", 0).style("stroke", "#ccc").style("stroke-width", "4")
+
+            function plot(p) {
+                // console.log(p);
+                var cell = d3.select(this);
+
+                x.domain(domainByTrait[p.x]);
+                y.domain(domainByTrait[p.y]);
+
+                cell.append("rect")
+                    .attr("class", "frame")
+                    .attr("x", padding / 2)
+                    .attr("y", padding / 2)
+                    .attr("width", size - padding)
+                    .attr("height", size - padding);
+
+                cell.selectAll("circle")
+                    .data(data)
+                    .enter().append("circle")
+                    .attr("id", function (d) { return "class_" + labelToClass[getLabel(d)]; })
+                    .attr("cx", function (d) { return x(d[p.x]); })
+                    .attr("cy", function (d) { return y(d[p.y]); })
+                    .attr("r", 4)
+                    .attr("fill", function (d) {
+                        return palette[labelToClass[getLabel(d)]];
+                    })
+                    .attr("item-color", function (d) {
+                        return palette[labelToClass[getLabel(d)]];
+                    })
+                    .attr("faint-color", function (d) {
+                        return palette[labelToClass[getLabel(d)] + palette.length / 2];
+                    })
+            }
+
+            var brushCell;
+
+            // Clear the previously-active brush, if any.
+            function brushstart(p) {
+                if (brushCell !== this) {
+                    d3.select(brushCell).call(brush.move, null);
+                    brushCell = this;
+                    x.domain(domainByTrait[p.x]);
+                    y.domain(domainByTrait[p.y]);
+                }
+            }
+            // Highlight the selected circles.
+            function brushmove(p) {
+                var e = d3.brushSelection(this);
+                svg.selectAll("circle").attr("fill", function (d) {
+
+                    if (!e) {
+                        return d3.select(this).attr("item-color")
+                    } else {
+                        if (
+                            e[0][0] > x(+d[p.x]) || x(+d[p.x]) > e[1][0]
+                            || e[0][1] > y(+d[p.y]) || y(+d[p.y]) > e[1][1]
+                        ) {
+                            // d3.select(this).lower()
+                            return d3.select(this).attr("faint-color")
+                        } else {
+                            d3.select(this).raise()
+                            return d3.select(this).attr("item-color")
+                        }
+                    }
+                })
+
+                svg.selectAll("rect").raise()
+            }
+
+            // If the brush is empty, select all circles.
+            function brushend() {
+                var e = d3.brushSelection(this);
+                if (e === null) svg.selectAll("circle").attr("fill", function (d) {
+                    return d3.select(this).attr("item-color")
+                });
+            }
+
+        });
+
+        function cross(a, b) {
+            var c = [], n = a.length, m = b.length, i, j;
+            for (i = -1; ++i < n;) for (j = -1; ++j < m;) c.push({ x: a[i], i: i, y: b[j], j: j });
+            return c;
+        }
+
+        // append the palette
+        let palette_results_div = d3.select("#" + divId).append("div")
+        let palette_size = palette.length / 2
+        for (let i = 0; i < palette_size; i++) {
+            // assemble a color
+            let span = palette_results_div.append("span").attr("class", "rect").attr("id", "rect-" + i)
+                .style("width", "30px").style("height", "30px").style("display", "inline-block")
+                .style("margin-left", "10px").style("background", palette[i]).attr("color", palette[i])
+                .style("text-align", "center").style("padding", "5px").attr("isHighlighted", 0)
+                .on("click", function () {
+                    d3.select(this).attr("isHighlighted", 1 - d3.select(this).attr("isHighlighted"))
+                    if (+d3.select(this).attr("isHighlighted")) {
+                        d3.select(this)
+                            .style("border", "4px solid #444");
+                    } else {
+                        d3.select(this)
+                            .style("border", "0px solid #444");
+                    }
+                    for (let j = 0; j < palette_size; j++) {
+                        if (!(+palette_results_div.select("#rect-" + j).attr("isHighlighted"))) {
+                            d3.select("#" + divId).selectAll("#class_" + j)
+                                .attr("fill", function () {
+                                    return palette[j + palette_size];
+                                })
+                        }
+                        else {
+                            d3.select("#" + divId).selectAll("#class_" + j)
+                                .attr("fill", function () {
+                                    return palette[j];
+                                })
+                                .raise();
+                        }
+                    }
+                })
+        }
+
+    }
+
+
+    tableau_optimal_matrix_palette = ['#edc948', '#4e79a7', '#f28e2b', '#e15759', '#59a14f', '#76b7b2', '#b07aa1', '#f2ebd4', '#d5dde5', '#f3e1ce', '#f0d6d7', '#d7e4d5', '#dce8e7', '#e7dde4']
+    drawScatterplotMatrix("tableauHighlighterDiv", tableau_optimal_matrix_palette)
+
+    let class_number = Math.floor(tableau_optimal_matrix_palette.length / 2)
+    tableau_default_matrix_palette = Tableau_10_palette.slice(0, class_number)
+    // Tableau 10 default + D3
+    for (let i = 0; i < class_number; i++) {
+        tableau_default_matrix_palette[i + class_number] = "#ccc"
+    }
+    drawScatterplotMatrix("d3v4matrixDiv", tableau_default_matrix_palette)
+
+    ours_matrix_palette = ["#8bd7ec", "#a47c7a", "#ffbd3b", "#ef69d2", "#b0e438", "#67a1f7", "#457549", "#ceeef7", "#e8dedd", "#ffedcc", "#f9ccef", "#e7f7c4", "#c0d8fb", "#cfe2d0"]
+    drawScatterplotMatrix("ourDiv", ours_matrix_palette)
+</script>
+
+<script>
+    // vega-lite
+
+    // Assign the specification to a local variable vlSpec.
+    var vlSpec = {
+        "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+        "title": "Seattle Weather, 2012-2015",
+        "data": {
+            "url": "../data/seattle-weather.csv"
+        },
+        "vconcat": [
+            {
+                "encoding": {
+                    "color": {
+                        "condition": {
+                            "param": "brush",
+                            "title": "Weather",
+                            "field": "weather",
+                            "type": "nominal",
+                            "scale": {
+                                "domain": ["sun", "fog", "drizzle", "rain", "snow"],
+                                "range": ["#e7ba52", "#a7a7a7", "#aec7e8", "#1f77b4", "#9467bd"]
+                            }
+                        },
+                        "value": "lightgray"
+                    },
+                    "x": {
+                        "field": "date",
+                        "timeUnit": "monthdate",
+                        "title": "Date",
+                        "axis": { "format": "%b" }
+                    },
+                    "y": {
+                        "title": "Maximum Daily Temperature (C)",
+                        "field": "temp_max",
+                        "scale": { "domain": [-5, 40] },
+                        "type": "quantitative"
+                    }
+                },
+                "width": 800,
+                "height": 400,
+                "mark": "circle",
+                "params": [{
+                    "name": "brush",
+                    "select": { "type": "interval", "encodings": ["x"] }
+                }],
+                "transform": [{ "filter": { "param": "click" } }]
+            },
+            {
+                "encoding": {
+                    "color": {
+                        "condition": {
+                            "param": "click",
+                            "field": "weather",
+                            "scale": {
+                                "domain": ["sun", "fog", "drizzle", "rain", "snow"],
+                                "range": ["#e7ba52", "#a7a7a7", "#aec7e8", "#1f77b4", "#9467bd"]
+                            }
+                        },
+                        "value": "lightgray"
+                    },
+                    "x": { "aggregate": "count" },
+                    "y": { "title": "Weather", "field": "weather" }
+                },
+                "width": 800,
+                "mark": "bar",
+                "params": [{
+                    "name": "click",
+                    "select": { "type": "point", "encodings": ["color"] }
+                }],
+                "transform": [{ "filter": { "param": "brush" } }]
+            }
+        ]
+    }
+
+    // Embed the visualization in the container with id `vis`
+    vegaEmbed('#vegaLiteDiv-render', vlSpec);
+
+    used_palette = ["#ffd341", "#1083d5", "#21db7c", "#ff91ff", "#b05500", "#fff5d5", "#c5e4fa", "#dbf9ea", "#ffe5ff", "#ffd7b2"]
+    let vlSpec_ours = {
+        "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+        "title": "Seattle Weather, 2012-2015",
+        "data": { "url": "../data/seattle-weather.csv" },
+        "transform": [{ "calculate": "datum.weather + \"-dehighlight\"", "as": "weather2" }],
+        "vconcat": [
+            {
+                "encoding": {
+                    "color": {
+                        "condition": { "param": "brush", "field": "weather" },
+                        "field": "weather2",
+                        "title": "Weather",
+                        "type": "nominal",
+                        "scale": {
+                            "domain": [
+                                "sun",
+                                "fog",
+                                "drizzle",
+                                "rain",
+                                "snow",
+                                "sun-dehighlight",
+                                "fog-dehighlight",
+                                "drizzle-dehighlight",
+                                "rain-dehighlight",
+                                "snow-dehighlight"
+                            ],
+                            "range": used_palette
+                        }
+                    },
+                    "x": {
+                        "field": "date",
+                        "timeUnit": "monthdate",
+                        "title": "Date",
+                        "axis": { "format": "%b" }
+                    },
+                    "y": {
+                        "title": "Maximum Daily Temperature (C)",
+                        "field": "temp_max",
+                        "scale": { "domain": [-5, 40] },
+                        "type": "quantitative"
+                    }
+                },
+                "width": 800,
+                "height": 400,
+                "mark": "circle",
+                "params": [
+                    { "name": "brush", "select": { "type": "interval", "encodings": ["x"] } }
+                ],
+                "transform": [{ "filter": { "param": "click" } }]
+            },
+            {
+                "encoding": {
+                    "color": {
+                        "condition": {
+                            "param": "click",
+                            "field": "weather"
+                        },
+                        "field": "weather2",
+                        "type": "nominal"
+                    },
+                    "x": { "aggregate": "count" },
+                    "y": { "title": "Weather", "field": "weather" }
+                },
+                "width": 800,
+                "mark": "bar",
+                "params": [
+                    { "name": "click", "select": { "type": "point", "encodings": ["color"] } }
+                ],
+                "transform": [{ "filter": { "param": "brush" } }]
+            }
+        ]
+    }
+    vegaEmbed('#ourMultiViewDiv-render', vlSpec_ours);
+</script>

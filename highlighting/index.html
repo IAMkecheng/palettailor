@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Highlighting</title>
+    <link rel="shortcut icon" href="../favicon.ico">
+
+    <script type="text/javascript" src="../js/lib/jquery-3.2.1.min.js"></script>
+    <script type="text/javascript" src="../js/lib/d3.v4.min.js"></script>
+
+    <!-- Bootstrap CSS -->
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <!-- bootstrap theme -->
+    <link href="../css/bootstrap-theme.css" rel="stylesheet">
+    <!--external css-->
+    <!-- font icon -->
+    <link href="../css/elegant-icons-style.css" rel="stylesheet" />
+    <link href="../css/font-awesome.min.css" rel="stylesheet" />
+    <!-- Custom styles -->
+    <link href="css/style.css" rel="stylesheet">
+
+    <!-- toggle javascripts -->
+    <script src="../css/jquery-1.8.3.min.js"></script>
+    <script type="text/javascript" src="../css/jquery-ui-1.9.2.custom.min.js"></script>
+    <script type="text/javascript" src="../css/jquery.nicescroll.js"></script>
+    <script src="../css/jquery.scrollTo.min.js"></script>
+    <script src="../css/scripts.js"></script>
+    <!-- bootstrap -->
+    <script src="../css/bootstrap.min.js"></script>
+</head>
+
+<body>
+    <!-- container section start -->
+    <section id="container" class="">
+        <header class="header dark-bg">
+
+            <!--logo start-->
+            <p><a href="index.html" class="logo">Highlighting</a></p>
+            <!--logo end-->
+
+            <div style="float: left;margin-left: 50px;width: 200px;">
+                <ul class="nav top-menu">
+                    <!-- load example data start -->
+                    <li class="dropdown">
+                        <a data-toggle="dropdown" class="dropdown-toggle" href="#">
+                            <i class="icon_folder-open_alt"></i>
+                        </a>
+                        <ul class="dropdown-menu extended tasks-bar">
+                            <div class="notify-arrow notify-arrow-black"></div>
+                            <li>
+                                <p class="black">Load Example Data</p>
+                            </li>
+                            <li>
+                                <a href="#" onclick="loadScatterplotExample()">
+                                    <div class="task-info">
+                                        <div class="desc">
+                                            <img src="../img/scatter.png" style="width:14px;height:14px;"> &nbsp;&nbsp;
+                                            Scatterplot Example
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" onclick="loadLinechartExample()">
+                                    <div class="task-info">
+                                        <div class="desc">
+                                            <i class="icon_easel"></i> &nbsp;&nbsp; Line Chart Example
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" onclick="loadBarchartExample()">
+                                    <div class="task-info">
+                                        <div class="desc">
+                                            <i class="icon_datareport"></i> &nbsp;&nbsp; Bar Chart Example
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                        </ul>
+
+                    </li>
+                    <!-- load example data end -->
+                    <!-- load data start-->
+                    <li class="dropdown">
+                        <a data-toggle="dropdown" class="dropdown-toggle" href="#">
+                            <i class="icon_folder-alt"></i>
+                        </a>
+                        <ul class="dropdown-menu extended inbox">
+                            <div class="notify-arrow notify-arrow-black"></div>
+                            <li>
+                                <p class="black">Load Your Data</p>
+                            </li>
+                            <li>
+                                <a href="#" onclick="F_Open_dialog('SCATTERPLOT')">
+                                    <div class="task-info">
+                                        <div class="desc">
+                                            <img src="../img/scatter.png" style="width:14px;height:14px;"> &nbsp;&nbsp;
+                                            Scatterplot Data
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" onclick="F_Open_dialog('LINECHART')">
+                                    <div class="task-info">
+                                        <div class="desc">
+                                            <i class="icon_easel"></i> &nbsp;&nbsp; Line Chart Data
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" onclick="F_Open_dialog('BARCHART')">
+                                    <div class="task-info">
+                                        <div class="desc">
+                                            <i class="icon_datareport"></i> &nbsp;&nbsp; Bar Chart Data
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                        </ul>
+                        <input type="file" id="fileLoad" style="display:none">
+                    </li>
+                    <!-- load data end -->
+                    <!-- <a data-toggle="dropdown" class="dropdown-toggle" href="#">
+            <h2 style="margin-left: 50px;margin-top: 10px;float: left;"><img src="img/loading.gif" id="loading"
+                class="hide"></h2>
+          </a> -->
+                </ul>
+
+            </div>
+            <div style="float: left;margin-top: 0px;">
+                <h2 style="margin-left: 50px;margin-top: 10px;float: left;"><img src="../img/loading.gif" id="loading"
+                        class="hide"></h2>
+            </div>
+            <div style="float: left;margin-top: 20px;font-size: 16px;" id="warn_div"><i
+                    class="arrow_left_alt"></i>&nbsp;&nbsp;<span>Please
+                    Load Data
+                    First.</span>&nbsp;&nbsp;<i class="icon_error-triangle_alt"></i></div>
+
+            <div style="float: left;margin-top: 15px; margin-left: 50px;font-size: 16pt;">
+                <!-- <a href="../index.html" target="_blank">
+                    <i class="icon_link"></i>
+                    <b>&nbsp;&nbsp; Go to Palettailor.</b>
+                </a> -->
+
+            </div>
+
+            <div class="top-nav notification-row">
+                <!-- notificatoin dropdown start-->
+                <ul class="nav pull-right top-menu">
+                    <!-- alert notification start-->
+                    <li id="alert_notificatoin_bar">
+                        <h2 style="margin-top: 0px;"><i class="icon_question_alt2" onclick="showHelp()"
+                                style="cursor:pointer"></i>
+                        </h2>
+                    </li>
+                    <!-- alert notification end-->
+                </ul>
+                <!-- notificatoin dropdown end-->
+            </div>
+        </header>
+        <!--header end-->
+
+        <!--sidebar start-->
+        <aside>
+            <div id="sidebar">
+                <div style="padding-right: 15px;
+        margin-top: 80px;
+        background: #53585d;
+        color: white;
+        font-size: 20px;
+        font-weight: bold;
+        /* line-height: 20px;
+        padding: 15px 0 15px 10px; */">
+                </div>
+                <!-- sidebar menu start-->
+                <ul class="sidebar-menu">
+                    <li class="sub-menu">
+                        <a href="javascript:;" class="">
+                            <!-- <i class="icon_adjust-horiz"></i> -->
+                            <span>Control Panel</span>
+                            <span class="menu-arrow arrow_carrot-down"></span>
+                        </a>
+                        <ul class="sub" style="display: block;">
+                            <li>
+                                <div class="menu-sidebar-div" style="padding-left: 32px;">
+                                    <label style="width: 180px;"><strong>Point Distinctness:</strong> </label>
+                                    <input class="form-control" id="inputBox_lc" type="number" value="100" step="1"
+                                        min="0" max="100" style="width: 80px;display: inline-block;"
+                                        oninput="changeSlider(this.id, this.value)">
+                                    <label>%</label>
+                                    <span class="arrow_carrot-down" onclick="showSlider('slider_0_div',this);"
+                                        style="margin-left: 10px;font-size: large;background-color: #f6f6f6;"></span>
+                                </div>
+                                <div class="menu-sidebar-div" id="slider_0_div"
+                                    style="padding-left: 32px;display: none;">
+                                    <input id="slider_0" name="slider_0" type="range" min=0 max=100 value=100
+                                        style="margin-left: 160px;" oninput="changeSlider(this.name, this.value)" />
+                                </div>
+                            </li>
+                            <li>
+                                <div class="menu-sidebar-div" style="padding-left: 32px;">
+                                    <label style="width: 180px;"><strong>Background Contrast:</strong> </label>
+                                    <input class="form-control" id="inputBox_bc" type="number" value="100" step="1"
+                                        min="0" max="100" style="width: 80px;display: inline-block;"
+                                        oninput="changeSlider(this.id, this.value)">
+                                    <label>%</label>
+                                    <span class="arrow_carrot-down" onclick="showSlider('slider_1_div',this);"
+                                        style="margin-left: 10px;font-size: large;background-color: #f6f6f6;"></span>
+                                </div>
+                                <div class="menu-sidebar-div" id="slider_1_div"
+                                    style="padding-left: 32px;display: none;">
+                                    <input id="slider_1" name="slider_1" type="range" min=0 max=100 value=100
+                                        style="margin-left: 160px;" oninput="changeSlider(this.name, this.value)" />
+                                </div>
+                            </li>
+                            <li>
+                                <div class="menu-sidebar-div" style="padding-left: 32px;">
+                                    <label style="width: 180px;"><strong>Name Difference:</strong> </label>
+                                    <input class="form-control" id="inputBox_nd" type="number" value="100" step="1"
+                                        min="0" max="100" style="width: 80px;display: inline-block;"
+                                        oninput="changeSlider(this.id, this.value)">
+                                    <label>%</label>
+                                    <span class="arrow_carrot-down" onclick="showSlider('slider_2_div',this);"
+                                        style="margin-left: 10px;font-size: large;background-color: #f6f6f6;"></span>
+                                </div>
+                                <div class="menu-sidebar-div" id="slider_2_div"
+                                    style="padding-left: 32px;display: none;">
+                                    <input id="slider_2" name="slider_2" type="range" min=0 max=100 value=100
+                                        style="margin-left: 160px;" oninput="changeSlider(this.name, this.value)" />
+                                </div>
+                            </li>
+                            <li>
+                                <div class="menu-sidebar-div" style="padding-left: 32px;">
+                                    <label style="width: 180px;"><strong>Color Consistency:</strong> </label>
+                                    <input class="form-control" id="inputBox_nc" type="number" value="100" step="1"
+                                        min="0" max="100" style="width: 80px;display: inline-block;"
+                                        oninput="changeSlider(this.id, this.value)">
+                                    <label>%</label>
+                                    <span class="arrow_carrot-down" onclick="showSlider('slider_3_div',this);"
+                                        style="margin-left: 10px;font-size: large;background-color: #f6f6f6;"></span>
+                                </div>
+                                <div class="menu-sidebar-div" id="slider_3_div"
+                                    style="padding-left: 32px;display: none;">
+                                    <input id="slider_3" name="slider_3" type="range" min=0 max=100 value=100
+                                        style="margin-left: 160px;" oninput="changeSlider(this.name, this.value)" />
+                                </div>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="sub-menu">
+                        <a href="javascript:;" class="">
+                            <span>Palette Panel</span>
+                            <span class="menu-arrow arrow_carrot-right"></span>
+                        </a>
+                        <ul class="sub" style="display: block;">
+                            <li>
+                                <div class="menu-sidebar-div">
+                                    <table>
+                                        <colgroup>
+                                            <col style="width:10%">
+                                            </col>
+                                            <col style="width:20%">
+                                            </col>
+                                            <col style="width:25%">
+                                            </col>
+                                            <col style="width:20%">
+                                            </col>
+                                            <col style="width:25%">
+                                            </col>
+                                        </colgroup>
+                                        <thead>
+                                            <tr>
+                                                <th>Status</th>
+                                                <th>Label</th>
+                                                <th>Color</th>
+                                                <th>Color Name</th>
+                                                <th>Hex</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tfInfoLabel">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="sub-menu">
+                        <a href="javascript:;" class="">
+                            <span>Luminance Range</span>
+                            <span class="menu-arrow arrow_carrot-right"></span>
+                        </a>
+                        <ul class="sub">
+                            <li>
+                                <div class="menu-sidebar-div" style="padding-left: 32px;text-align:center;">
+                                    <svg id="lightnessFilterBar"></svg>
+                                    <div>
+                                        <input type="number" class="lightnessFilterInput" placeholder="#"
+                                            id="lightnessFilterRangeLow" style="width: 50px;margin-left: 10px;"
+                                            readonly> to
+                                        <input type="number" class="lightnessFilterInput" placeholder="#"
+                                            id="lightnessFilterRangeHigh" style="width: 50px;" readonly>
+                                    </div>
+                                </div>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+                <!-- sidebar menu end-->
+            </div>
+        </aside>
+        <!--sidebar end-->
+
+        <!--main content start-->
+        <section id="main-content">
+            <section class="wrapper">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="panel panel-default">
+                            <div class="panel-heading operationDiv" style="font-size: 18px;font-weight: bold;">
+                                <div style="display: inline-block; padding: 5px;">
+                                    <a href="#" class="btn-setting" id="generateResultID" onclick="renderResult()">
+                                        <i class="icon_refresh"></i>
+                                        Generate
+                                    </a>
+                                </div>
+                                <div style="display: inline-block;">
+                                    <a href="#" class="btn-setting" style="margin-left: 10px;text-align: center;">
+                                        <i><img class="icon_efficiency_choosed" id="effi_icon" title="High Efficiency"
+                                                onclick="saMode(0)"></i>
+                                        <i style="margin-left: 5px;"><img class="icon_quality" id="qual_icon"
+                                                title="High Quality" onclick="saMode(1)"></i>
+                                    </a>
+                                </div>
+
+                                <img src="../img/loading.gif" id="running" class="hide">
+
+                                <div class="panel-actions" style="display: inline-block; padding: 5px;">
+                                    <a href="#" class="btn-setting" onclick="changeBgcolor()"><i
+                                            style="margin-left: 15px;"><img class="icon_black_bg" id="bg_icon"
+                                                title="Change Background Color"></i></a>
+                                    <a href="#" class="btn-setting" onclick="downloadSvg()">
+                                        <i style="margin-left: 15px;">
+                                            <img class="icon_download" id="download_icon" title="Download SVG">
+                                        </i>
+                                    </a>
+                                    <!-- <a href="#" class="btn-setting" onclick="savePNG()">
+                                        <i>
+                                            <img class="icon_download" id="download_icon" title="Download PNG">
+                                        </i>
+                                    </a> -->
+                                </div>
+                            </div>
+                            <div class="panel-body-svg" style="text-align: center;">
+                                <div id="renderDiv"
+                                    style="height:620px;overflow-x:scroll;overflow-y:hidden;white-space: nowrap;">
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="panel-body-svg">
+                                <div id="outputDiv" style="margin-top: 10px;">
+                                    <label for="name">
+                                        <h4><strong>Palette:</strong></h4>
+                                    </label><br>
+                                    <div class="paletteDiv"></div><br>
+                                    <label style="float: left;">
+                                        <h4><strong>Text:&nbsp;&nbsp;</strong></h4>
+                                    </label><input type="text" id="paletteText" name="name" size="200"
+                                        style="width: 800px;height:36px;float: left;" readonly value=""
+                                        onclick="this.setSelectionRange(0, this.value.length);">
+                                    <select class="form-control resultFnt"
+                                        style="width: 100px;float: left;margin-left: 10px;">
+                                        <option selected>Hex</option>
+                                        <option>RGB</option>
+                                        <option>Lab</option>
+                                        <option>LCH</option>
+                                        <option>HSL</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4" style="padding-left: 0;">
+                        <!-- List starts -->
+                        <ul style="padding-left: 0px;">
+                            <li
+                                style="background: #53585d;color: white;font-size: 18px;font-weight: bold;line-height: 20px;padding: 15px 0 15px 10px;text-align: center;">
+                                <i class="fa fa-history"></i>
+                                <span>History Panel</span>
+                            </li>
+                        </ul>
+                        <ul class="historyList" style="padding-left: 0px;overflow: auto;height: 80vh;">
+
+                        </ul>
+                    </div>
+                </div>
+
+
+            </section>
+
+            <div class="text-right">
+                <div class="credits">
+
+                </div>
+            </div>
+            <div class="instructions-container hide">
+                <div class="col-sm-12 col-md-6">
+                    <!-- <video src="./tutorial.mp4" controls="controls">
+            您的浏览器不支持 video 标签。
+          </video> -->
+                </div>
+                <div class="col-sm-12 col-md-6 instructions_div">
+                </div>
+                <div></div>
+            </div>
+        </section>
+        <!--main content end-->
+    </section>
+    <!-- container section start -->
+</body>
+<script>
+    $(".instructions_div").load("../instructions.html");
+</script>
+
+<script type="text/javascript" src="../js/lib/d3.color.min.js"></script>
+<script type="text/javascript" src="../js/lib/c3.min.js"></script>
+<script type="text/javascript" src="js/mark-jnd.js"></script>
+
+<script type="text/javascript" src="js/global.js"></script>
+<script type="text/javascript" src="../js/utils.js"></script>
+<script type="text/javascript" src="../js/lightnessFilter.js"></script>
+<script type="text/javascript" src="js/dataLoader.js"></script>
+<script type="text/javascript" src="js/distanceCalculator.js"></script>
+<script type="text/javascript" src="js/optimizeFunc.js"></script>
+<script type="text/javascript" src="js/index.js"></script>
+
+<!-- test color assignment -->
+<script type="text/javascript" src="js/optimizedAssignment/flann.js"></script>
+<script type="text/javascript" src="js/optimizedAssignment/GA.js"></script>
+<script type="text/javascript" src="js/optimizedAssignment/color-assignment.js"></script>
+
+<style>
+    #outputDiv svg {
+        font: 10px sans-serif;
+        padding: 10px;
+    }
+
+    #outputDiv .axis,
+    #outputDiv .frame {
+        shape-rendering: crispEdges;
+    }
+
+    #outputDiv .axis line {
+        stroke: #ddd;
+    }
+
+    #outputDiv .axis path {
+        display: none;
+    }
+
+    #outputDiv .cell text {
+        font-weight: bold;
+        text-transform: capitalize;
+        fill: black;
+    }
+
+    #outputDiv .frame {
+        fill: none;
+        stroke: #aaa;
+    }
+
+    #outputDiv .extent {
+        fill: #000;
+        fill-opacity: .125;
+        stroke: #fff;
+    }
+
+    #canvasDiv {
+        position: relative;
+        width: 600px;
+        height: 600px;
+        display: inline-block;
+    }
+
+    #canvasDiv canvas,
+    #canvasDiv svg {
+        position: absolute;
+        left: 0;
+    }
+</style>
+
+</html>

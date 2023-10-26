@@ -1,0 +1,1223 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Interactive Examples</title>
+    <script type="text/javascript" src="../../js/lib/d3.v4.min.js"></script>
+    <script type="text/javascript" src="../../js/utils.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/vega@5.22.1"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-lite@5.6.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-embed@6.21.0"></script>
+</head>
+
+<style>
+    div {
+        text-align: center;
+    }
+
+    #canvasDiv {
+        position: relative;
+        width: 740px;
+        height: 540px;
+        display: inline-block;
+    }
+
+    #canvasDiv canvas,
+    #canvasDiv svg {
+        position: absolute;
+        left: 0;
+    }
+
+    #matrix-div svg {
+        font: 10px sans-serif;
+        padding: 10px;
+    }
+
+    #matrix-div .axis,
+    #matrix-div .frame {
+        shape-rendering: crispEdges;
+    }
+
+    #matrix-div .axis line {
+        stroke: #ddd;
+    }
+
+    #matrix-div .axis path {
+        display: none;
+    }
+
+    #matrix-div .cell text {
+        font-weight: bold;
+        text-transform: capitalize;
+        fill: black;
+    }
+
+    #matrix-div .frame {
+        fill: none;
+        stroke: #aaa;
+    }
+
+    #d3v4matrixDiv circle {
+        fill-opacity: .7;
+    }
+
+    #d3v4matrixDiv circle.hidden {
+        fill: #ccc !important;
+    }
+
+    #d3v4matrixDiv .extent {
+        fill: #000;
+        fill-opacity: .125;
+        stroke: #fff;
+    }
+</style>
+
+<body>
+
+    <div id="fig-1-div">
+        <h1>Fig.1</h1>
+    </div>
+    <hr>
+    <hr>
+    <hr>
+    <div id="fig-14-div">
+        <h1>Fig.14</h1>
+    </div>
+    <hr>
+    <hr>
+    <hr>
+
+    <div id="fig-15-div">
+        <h1>Fig.15 with different highlighting methods</h1>
+    </div>
+    <hr>
+    <hr>
+    <hr>
+
+    <div id="fig-16-div">
+        <h1>Fig.16 for Line Chart</h1>
+    </div>
+    <hr>
+    <hr>
+    <hr>
+
+    <div id="matrix-div">
+        <h1>Scatterplot Matrix (Dataset from <a
+                href="https://towardsdatascience.com/seaborn-pairplot-enhance-your-data-understanding-with-a-single-plot-bf2f44524b22"
+                target="_blank">Force 2020 Machine Learning competition</a>)</h1>
+        <div id="d3v4matrixDiv" style="display: inline-block;">
+            <h3>
+                Refer to: <a href="https://bl.ocks.org/Fil/6d9de24b31cb870fed2e6178a120b17d" target="_blank">Scatterplot
+                    Matrix Brushing
+                    d3v4 Example</a> & <br>
+                <a href="https://vega.github.io/vega/examples/brushing-scatter-plots/" target="_blank">Vega Brushing
+                    Scatter Plots
+                    Example</a>
+            </h3>
+
+        </div>
+        <div id="tableauHighlighterDiv" style="display: inline-block;">
+            <h3>
+                <a href="https://public.tableau.com/app/profile/neil.lord/viz/ParameterHighlight/Sheet1"
+                    target="_blank">Tableau
+                    Highlighter</a>
+            </h3>
+
+        </div>
+        <div id="ourDiv" style="display: inline-block;">
+            <h3>
+                Our Context-preserving Highlighting Method
+            </h3>
+
+        </div>
+    </div>
+    <hr>
+    <hr>
+    <hr>
+
+    <div id="multiview-div">
+        <h1>Multi-view</h1>
+        <div id="vegaLiteDiv" style="display: inline-block;">
+            <h3>
+                Refer to:
+                <a href="https://vega.github.io/vega-lite/examples/interactive_seattle_weather.html"
+                    target="_blank">Seattle Weather Exploration</a>
+            </h3>
+            <div id="vegaLiteDiv-render"></div>
+
+        </div>
+        <div id="ourMultiViewDiv" style="display: inline-block;">
+            <h3>
+                Our Context-preserving Highlighting Method
+            </h3>
+            <div id="ourMultiViewDiv-render"></div>
+        </div>
+    </div>
+</body>
+
+<script>
+    //global variables:
+    let svg_margin = {
+        top: 20,
+        right: 20,
+        bottom: 20,
+        left: 20
+    },
+        radius = 6,
+        svg_width = 500,
+        svg_height = 500,
+        SVGWIDTH = svg_width + svg_margin.left + svg_margin.right,
+        SVGHEIGHT = svg_height + svg_margin.top + svg_margin.bottom;
+
+    let bgcolor = "#fff"
+
+    Tableau_10_palette = ["#4e79a7", "#f28e2b", "#e15759", "#76b7b2", "#59a14f", "#edc948", "#b07aa1", "#ff9da7", "#9c755f", "#bab0ac"]
+    Tableau_10_palette_white = ["#d5dde5", "#f3e1ce", "#f0d6d7", "#dce8e7", "#d7e4d5", "#f2ebd4", "#e7dde4", "#f5e3e5", "#e3dcd8", "#e9e7e6"];
+    Tableau_10_palette_blue = ["#153477", "#333860", "#302d69", "#1c3f79", "#173b67", "#324266", "#273476", "#353a77", "#23336a", "#293e78"];
+
+
+    fig_1_palettailor = ["#1dff60", "#ff05d2", "#716cff", "#149919", "#f8f900", "#ff1325", "#28ffff", "#d0b0ee"]
+    fig_1_tableau_random = ["#76b7b2", "#ff9da7", "#59a14f", "#edc948", "#4e79a7", "#e15759", "#f28e2b", "#b07aa1"]
+    fig_1_tableau_optimal = ["#4e79a7", "#f28e2b", "#e15759", "#76b7b2", "#59a14f", "#edc948", "#b07aa1", "#ff9da7"]
+    fig_1_ours = ["#ecc300", "#ef617f", "#c693d6", "#287480", "#ff9301", "#3aa770", "#706c8c", "#7bc7e5", "#fff0ab", "#f9c9d3", "#e8d4ee", "#b1dfe6", "#ffd296", "#c0e9d4", "#d9d8e1", "#d8eef7"]
+
+    fig_14_ours = ["#e32995", "#e6b01a", "#0386dd", "#7be3f6", "#e54306", "#00aa26", "#ffa0ff", "#7152db", "#48092d", "#4c3a08", "#001d30", "#054854", "#310e01", "#00400e", "#590059", "#160b39"]
+
+    fig_15_palettailor = ["#6fdf28", "#fed0e6", "#2ef8ba", "#f8f800", "#fe0037", "#3168c1", "#9a41d2", "#a95109", "#00d1f3", "#fe60eb"]
+    fig_15_random_tableau = ['#f28e2b', '#4e79a7', '#76b7b2', '#9c755f', '#59a14f', '#b07aa1', '#e15759', '#edc948', '#ff9da7', '#bab0ac']
+    fig_15_optimal_tableau = ['#f28e2b', '#9c755f', '#e15759', '#edc948', '#59a14f', '#4e79a7', '#b07aa1', '#bab0ac', '#ff9da7', '#76b7b2']
+    fig_15_ours = ["#ed6600", "#4c9fff", "#ff2a34", "#31de62", "#009840", "#777198", "#4fdbcc", "#ffce38", "#ff78ff", "#9e53e8", "#ffdabf", "#bfdcff", "#ffe3e4", "#e0fae7", "#c7ffde", "#e9e8ee", "#cef5f0", "#fff5d8", "#ffc9ff", "#ebddfa"]
+
+    fig_16_line_tableau = ["#4e79a7", "#f28e2b", "#e15759", "#76b7b2", "#59a14f"]
+    fig_16_line_ours = ["#995f28", "#59a34b", "#da45e2", "#f8b91c", "#4abdff", "#f2dfcd", "#d8ebd4", "#f4c9f6", "#fdecc2", "#c0e8ff"]
+
+    function loadData(name, data) {
+        d3.text("../data/" + name, function (error, text) {
+            if (error) throw error;
+            let labelSet = new Set();
+            let source_data = d3.csvParseRows(text, function (d) {
+                if (!isNaN(d[0]) && !isNaN(d[1])) {
+                    return d; //.map(Number);
+                }
+            }).map(function (d) { // change the array to an object, use the first two feature as the position
+                //source data
+                var row = {};
+                row.label = d[2];
+                labelSet.add(row.label);
+                row.x = +d[0];
+                row.y = +d[1];
+                return row;
+            });
+            data.push(source_data)
+            let labelToClass = getLabelToClassMapping(labelSet);
+            data.push(labelToClass)
+
+            console.log(labelToClass);
+        });
+    }
+
+
+    function drawInteractiveScatterplot(data, divId, palette, title, labelToClass, isOpacity) {
+
+        let xScale, xMap, xAxis, yScale, yMap, yAxis;
+        xScale = d3.scaleLinear().range([0, svg_width]); // value -> display
+        xMap = function (d) {
+            return xScale(xValue(d));
+        }; // data -> display
+        xAxis = d3.axisBottom().scale(xScale).ticks(0);
+        yScale = d3.scaleLinear().range([svg_height, 0]); // value -> display
+        yMap = function (d) {
+            return yScale(yValue(d));
+        }; // data -> display
+        yAxis = d3.axisLeft().scale(yScale).ticks(0);
+
+        // using same scale
+        xScale.domain(d3.extent(data, xValue));
+        yScale.domain(d3.extent(data, yValue));
+
+        let div = d3.select("#" + divId).append("div").style("display", "inline-block").style("margin-left", "10px")
+        div.append("h3").text(title)
+        let scatterplot_svg = div.append("svg").attr("typeId", "scatter")
+            .attr("width", SVGWIDTH).attr("height", SVGHEIGHT);
+        let scatterplot = scatterplot_svg.style("background-color", bgcolor).append("g")
+            .attr("transform", "translate(" + svg_margin.left + "," + svg_margin.top + ")");
+
+        var brush = d3.brush()
+            .on("start", brushstart)
+            .on("brush", brushmove)
+            .on("end", brushend)
+            .extent([[0, 0], [svg_width, svg_height]]);
+        var brushCell;
+        // Clear the previously-active brush, if any.
+        function brushstart(p) {
+            if (brushCell !== this) {
+                d3.select(brushCell).call(brush.move, null);
+                brushCell = this;
+            }
+        }
+
+        // Highlight the selected circles.
+        function brushmove(p) {
+            var e = d3.brushSelection(this);
+
+            if (!isOpacity) {
+                scatterplot_svg.selectAll("circle").attr("fill", function (d) {
+                    return !e
+                        ? d3.select(this).attr("item-color")
+                        : ((
+                            e[0][0] > xMap(d) || xMap(d) > e[1][0]
+                            || e[0][1] > yMap(d) || yMap(d) > e[1][1]
+                        ) ? d3.select(this).attr("faint-color") : d3.select(this).attr("item-color"));
+                });
+            } else {
+                // opacity
+                scatterplot_svg.selectAll("circle").style("opacity", function (d) {
+                    return !e
+                        ? 1
+                        : ((
+                            e[0][0] > xMap(d) || xMap(d) > e[1][0]
+                            || e[0][1] > yMap(d) || yMap(d) > e[1][1]
+                        ) ? 0.2 : 1);
+                });
+            }
+        }
+
+        // If the brush is empty, select all circles.
+        function brushend() {
+            var e = d3.brushSelection(this);
+            if (e === null) scatterplot_svg.selectAll("circle").attr("fill", function (d) {
+                return d3.select(this).attr("item-color")
+            }).style("opacity", 1);
+        }
+
+        shift_click_flag = false
+        scatterplot_svg.on("click", function () {
+            if (d3.event.shiftKey) {
+                // console.log("Mouse+Shift pressed");
+                if (!shift_click_flag) {
+                    scatterplot.select("#point-group").raise()
+                    shift_click_flag = true
+                    scatterplot.selectAll("circle").attr("fill", function (d) {
+                        return d3.select(this).attr("faint-color")
+                    })
+                }
+            } else {
+                shift_click_flag = false
+                scatterplot.select("#point-group").lower()
+                scatterplot.selectAll("circle").attr("fill", function (d) {
+                    return d3.select(this).attr("item-color")
+                })
+            }
+        });
+        // draw dots
+        let dots = scatterplot.append("g").attr("id", "point-group").selectAll(".dot")
+            .data(data)
+            .enter().append("circle")
+            .attr("class", "dot")
+            .attr("id", function (d) {
+                return "class_" + labelToClass[cValue(d)];
+            })
+            .attr("r", radius)
+            .attr("cx", xMap)
+            .attr("cy", yMap)
+            .attr("fill", function (d) {
+                return palette[labelToClass[cValue(d)]];
+            })
+            .attr("item-color", function (d) {
+                return palette[labelToClass[cValue(d)]];
+            })
+            .attr("faint-color", function (d) {
+                return palette[labelToClass[cValue(d)] + palette.length / 2];
+            })
+            .on("click", function () {
+                // console.log("click point");
+                d3.select(this).attr("fill", function (d) {
+                    return palette[labelToClass[cValue(d)]];
+                }).raise();
+            })
+
+        scatterplot.call(brush);
+        // add the x Axis
+        scatterplot.append("g")
+            .attr("transform", "translate(0," + svg_height + ")")
+            .call(d3.axisBottom(xScale).tickFormat(""))
+
+        // add the y Axis
+        scatterplot.append("g")
+            .call(d3.axisLeft(yScale).tickFormat(""))
+
+        scatterplot_svg.select(".selection").style("fill-opacity", 0).style("stroke", "#ccc").style("stroke-width", "4")
+
+        // append the palette
+        let palette_results_div = div.append("div")
+        let palette_size = palette.length / 2
+        for (let i = 0; i < palette_size; i++) {
+            // assemble a color
+            let span = palette_results_div.append("span").attr("class", "rect").attr("id", "rect-" + i)
+                .style("width", "30px").style("height", "30px").style("display", "inline-block")
+                .style("margin-left", "10px").style("background", palette[i]).attr("color", palette[i])
+                .style("text-align", "center").style("padding", "5px").attr("isHighlighted", 0)
+                .on("click", function () {
+                    d3.select(this).attr("isHighlighted", 1 - d3.select(this).attr("isHighlighted"))
+                    if (+d3.select(this).attr("isHighlighted")) {
+                        d3.select(this)
+                            .style("border", "4px solid #444");
+                    } else {
+                        d3.select(this)
+                            .style("border", "0px solid #444");
+                    }
+                    if (!isOpacity)
+                        for (let j = 0; j < palette_size; j++) {
+                            if (!(+palette_results_div.select("#rect-" + j).attr("isHighlighted"))) {
+                                scatterplot_svg.selectAll("#class_" + j)
+                                    .attr("fill", function () {
+                                        return palette[j + palette_size];
+                                    })
+                            }
+                            else {
+                                scatterplot_svg.selectAll("#class_" + j)
+                                    .attr("fill", function () {
+                                        return palette[j];
+                                    })
+                                    .raise();
+                            }
+                        }
+                    else {
+                        for (let j = 0; j < palette_size; j++) {
+                            if (!(+palette_results_div.select("#rect-" + j).attr("isHighlighted"))) {
+                                scatterplot_svg.selectAll("#class_" + j)
+                                    .style("opacity", 0.2)
+                            }
+                            else {
+                                scatterplot_svg.selectAll("#class_" + j)
+                                    .style("opacity", 1)
+                                    .raise();
+                            }
+                        }
+                    }
+                })
+        }
+    }
+
+
+    /**
+     * https://bl.ocks.org/mbostock/0d20834e3d5a46138752f86b9b79727e
+     * @param {*} svg 
+     * @param {*} used_palette 
+     */
+    function transferSvgToCanvas(svg, used_palette, divParent) {
+        let used_colors = [], class_number = used_palette.length / 2
+        for (let i = 0; i < class_number; i++) {
+            used_colors.push([d3.rgb(used_palette[i]), d3.rgb(used_palette[i + class_number])])
+        }
+        // console.log(used_colors);
+        let div = divParent.append("div").attr("id", "canvasDiv")
+        let canvas_id = "cid-" + new Date().getTime()
+        div.append("canvas").attr("id", canvas_id).attr("width", SVGWIDTH).attr("height", SVGHEIGHT)
+        let brush_svg = div.append("svg").attr("width", SVGWIDTH).attr("height", SVGHEIGHT)
+
+        // render canvas
+        let image = new Image;
+        // get svg data
+        var xml = new XMLSerializer().serializeToString(svg._groups[0][0]);
+
+        // make it base64
+        var svg64 = btoa(xml);
+        var b64Start = 'data:image/svg+xml;base64,';
+
+        // prepend a "header"
+        var image64 = b64Start + svg64;
+
+        image.onload = function () {
+            // draw the image onto the canvas
+            var canvas = document.getElementById(canvas_id),
+                context = canvas.getContext("2d")
+            context.drawImage(image, 0, 0)
+            // svg.remove()
+            let imgData = context.getImageData(0, 0, context.canvas.width, context.canvas.height);
+            let index, colored_pixels = [];
+            let background_color = d3.rgb(bgcolor)
+            for (let i = 0; i < imgData.height; i++) {
+                for (let j = 0; j < imgData.width; j++) {
+                    index = i * imgData.width + j;
+                    if (!(imgData.data[index * 4] === background_color.r && imgData.data[index * 4 + 1] === background_color.g && imgData.data[index * 4 + 2] === background_color.b)) {
+                        let color
+                        for (let k = 0; k < used_colors.length; k++) {
+                            if (Math.abs(used_colors[k][0].r - imgData.data[index * 4]) < 2 && Math.abs(used_colors[k][0].g - imgData.data[index * 4 + 1]) < 2 && Math.abs(used_colors[k][0].b - imgData.data[index * 4 + 2]) < 2) {
+                                color = used_colors[k]
+                                break
+                            }
+                        }
+                        if (color)
+                            colored_pixels.push([j, i, color])
+                        else {
+                            imgData.data[index * 4] = background_color.r
+                            imgData.data[index * 4 + 1] = background_color.g
+                            imgData.data[index * 4 + 2] = background_color.b
+                        }
+                    }
+                }
+            }
+            // console.log(colored_pixels);
+            var brush = d3.brush()
+                .on("start brush", brushed)
+                .on("end", brushended);
+
+            brush_svg.append("g")
+                .attr("class", "brush")
+                .call(brush)
+                .call(brush.move, null);
+            brush_svg.select(".selection").style("fill-opacity", 0).style("stroke", "#ccc").style("stroke-width", "4")
+
+            function brushed() {
+                var e = d3.event.selection
+                if (!e) return;
+                // console.log(e[0][0], e[0][1], e[1][0], e[1][1]);
+                for (let i = 0; i < colored_pixels.length; i++) {
+                    index = colored_pixels[i][1] * imgData.width + colored_pixels[i][0];
+                    if (e[0][0] > colored_pixels[i][0] || colored_pixels[i][0] > e[1][0] || e[0][1] > colored_pixels[i][1] || colored_pixels[i][1] > e[1][1]) {
+                        // not selected
+                        imgData.data[index * 4] = colored_pixels[i][2][1].r
+                        imgData.data[index * 4 + 1] = colored_pixels[i][2][1].g
+                        imgData.data[index * 4 + 2] = colored_pixels[i][2][1].b
+                    } else {
+                        // selected
+                        imgData.data[index * 4] = colored_pixels[i][2][0].r
+                        imgData.data[index * 4 + 1] = colored_pixels[i][2][0].g
+                        imgData.data[index * 4 + 2] = colored_pixels[i][2][0].b
+                    }
+                }
+
+                putImageData(context, imgData)
+            }
+
+            function brushended() {
+                if (!d3.event.selection) {
+                    for (let i = 0; i < colored_pixels.length; i++) {
+                        index = colored_pixels[i][1] * imgData.width + colored_pixels[i][0];
+                        imgData.data[index * 4] = colored_pixels[i][2][0].r
+                        imgData.data[index * 4 + 1] = colored_pixels[i][2][0].g
+                        imgData.data[index * 4 + 2] = colored_pixels[i][2][0].b
+                    }
+                    putImageData(context, imgData)
+                }
+            }
+
+            function putImageData(ctx, imageData) {
+                var height = imageData.height;
+                var width = imageData.width;
+                for (var y = 0; y < height; y++) {
+                    for (var x = 0; x < width; x++) {
+                        var pos = y * width + x;
+                        ctx.fillStyle = 'rgba(' + imageData.data[pos * 4 + 0] +
+                            ',' + imageData.data[pos * 4 + 1] +
+                            ',' + imageData.data[pos * 4 + 2] +
+                            ',' + (imageData.data[pos * 4 + 3] / 255) + ')';
+                        ctx.fillRect(x, y, 1, 1);
+                    }
+                }
+            }
+        }
+
+        // set it as the source of the img element
+        image.src = image64;
+    }
+
+
+    function drawInteractiveLinechart(data, divId, palette, title, labelToClass, isOpacity) {
+        let xScale, xMap, xAxis, yScale, yMap, yAxis;
+        // set the ranges
+        xScale = d3.scaleLinear().range([0, svg_width]); // value -> display
+        xMap = function (d) {
+            return xScale(xValue(d));
+        }; // data -> display
+        xAxis = d3.axisBottom().scale(xScale).ticks(0);
+        yScale = d3.scaleLinear().range([svg_height, 0]); // value -> display
+        yMap = function (d) {
+            return yScale(yValue(d));
+        }; // data -> display
+        yAxis = d3.axisLeft().scale(yScale).ticks(0);
+
+        yScale.domain(d3.extent(data, function (d) {
+            return d.y;
+        }));
+
+        let div = d3.select("#" + divId).append("div").style("display", "inline-block").style("margin-left", "10px")
+        div.append("h3").text(title)
+
+        let linechart_svg = div.append("svg").attr("typeId", "line")
+            .attr("width", SVGWIDTH).attr("height", SVGHEIGHT);
+
+        let linechart = linechart_svg.style("background-color", bgcolor)
+            .append("g")
+            .attr("transform", "translate(" + svg_margin.left + "," + svg_margin.top + ")");
+
+        // Scale the range of the data
+        xScale.domain(d3.extent(data, function (d) {
+            return d.x;
+        }));
+        // define the line
+        let valueline = d3.line()
+            .x(function (d) {
+                return xScale(d.x);
+            })
+            .y(function (d) {
+                return yScale(d.y);
+            }).curve(d3.curveCatmullRom);
+
+        let linechart_source_data = [],
+            tmp_keys = [],
+            count = 0;
+        for (let point of data) {
+            if (tmp_keys[labelToClass[point.label]] == undefined) {
+                tmp_keys[labelToClass[point.label]] = count++;
+                linechart_source_data[tmp_keys[labelToClass[point.label]]] = { p: [], label: point.label };
+            }
+            linechart_source_data[tmp_keys[labelToClass[point.label]]].p.push({ x: point.x, y: point.y });
+        }
+
+        // Add the valueline path.
+        linechart.selectAll('path')
+            .data(linechart_source_data).enter().append("path")
+            .attr("d", function (d) {
+                return valueline(d.p);
+            })
+            .attr("class", "linechart")
+            .attr("id", function (d) {
+                return "class_" + labelToClass[cValue(d)];
+            })
+            .attr("fill", "none")
+            .attr("stroke", function (d) {
+                return palette[labelToClass[cValue(d)]];
+            })
+            .style("stroke-width", radius)
+            .attr("item-color", function (d) {
+                return palette[labelToClass[cValue(d)]];
+            })
+            .attr("faint-color", function (d) {
+                return palette[labelToClass[cValue(d)] + palette.length / 2];
+            })
+            .on("click", function (d) {
+
+
+            })
+
+        // Add the X Axis
+        linechart.append("g")
+            .attr("transform", "translate(0," + svg_height + ")")
+            .call(d3.axisBottom(xScale).tickFormat(""));
+
+        // Add the Y Axis
+        linechart.append("g")
+            .call(d3.axisLeft(yScale).tickFormat(""));
+
+        transferSvgToCanvas(linechart_svg, palette, div)
+
+        // append the palette
+        let palette_results_div = div.append("div")
+        let palette_size = palette.length / 2
+        for (let i = 0; i < palette_size; i++) {
+            // assemble a color
+            let span = palette_results_div.append("span").attr("class", "rect").attr("id", "rect-" + i)
+                .style("width", "30px").style("height", "30px").style("display", "inline-block")
+                .style("margin-left", "10px").style("background", palette[i]).attr("color", palette[i])
+                .style("text-align", "center").style("padding", "5px").attr("isHighlighted", 0)
+                .on("click", function () {
+                    d3.select(this).attr("isHighlighted", 1 - d3.select(this).attr("isHighlighted"))
+                    if (+d3.select(this).attr("isHighlighted")) {
+                        d3.select(this)
+                            .style("border", "4px solid #444");
+                    } else {
+                        d3.select(this)
+                            .style("border", "0px solid #444");
+                    }
+                    if (!isOpacity)
+                        for (let j = 0; j < palette_size; j++) {
+                            if (!(+palette_results_div.select("#rect-" + j).attr("isHighlighted"))) {
+                                linechart_svg.selectAll("#class_" + j)
+                                    .attr("stroke", function () {
+                                        return palette[j + palette_size];
+                                    })
+                            }
+                            else {
+                                linechart_svg.selectAll("#class_" + j)
+                                    .attr("stroke", function () {
+                                        return palette[j];
+                                    })
+                                    .raise();
+                            }
+                        }
+                    else {
+                        for (let j = 0; j < palette_size; j++) {
+                            if (!(+palette_results_div.select("#rect-" + j).attr("isHighlighted"))) {
+                                linechart_svg.selectAll("#class_" + j)
+                                    .style("opacity", 0.2)
+                            }
+                            else {
+                                linechart_svg.selectAll("#class_" + j)
+                                    .style("opacity", 1)
+                                    .raise();
+                            }
+                        }
+                    }
+                })
+        }
+
+        linechart_svg.on("click", function () {
+            linechart_svg.selectAll(".linechart")
+                .attr("stroke", function () {
+                    return d3.select(this).attr("item-color")
+                })
+        });
+    }
+</script>
+
+<script>
+    // Fig.1 
+    fig_1_data = []
+    loadData("teaser-top.csv", fig_1_data)
+
+    function drawFigs(labelToClass) {
+        // Fig.1
+        Tableau_10_palette_muted = Tableau_10_palette_white
+        tableau_10 = {}
+        for (let i = 0; i < Tableau_10_palette.length; i++) {
+            tableau_10[Tableau_10_palette[i]] = Tableau_10_palette_muted[i]
+        }
+
+        let class_number = Object.keys(labelToClass).length
+        let used_palette = fig_1_tableau_random.slice()
+        for (let i = 0; i < class_number; i++) {
+            used_palette[i + class_number] = "#ccc"
+        }
+        drawInteractiveScatterplot(fig_1_data, "fig-1-div", used_palette, "Tableau (default assignment) with Canonical Highlighting", labelToClass)
+
+        used_palette = fig_1_palettailor.slice()
+        for (let i = 0; i < class_number; i++) {
+            let hsl = d3.hsl(used_palette[i])
+            used_palette[i + class_number] = d3.hsl(hsl.h, hsl.s, 0.9)
+        }
+        drawInteractiveScatterplot(fig_1_data, "fig-1-div", used_palette, "Palettailor with Lightness Adjustment", labelToClass)
+
+        used_palette = fig_1_palettailor.slice()
+        for (let i = 0; i < class_number; i++) {
+            used_palette[i + class_number] = used_palette[i]
+        }
+        drawInteractiveScatterplot(fig_1_data, "fig-1-div", used_palette, "Palettailor with Alpha Blending", labelToClass, 1)
+
+        used_palette = fig_1_tableau_optimal.slice()
+        for (let i = 0; i < class_number; i++) {
+            used_palette[i + class_number] = tableau_10[used_palette[i]]
+        }
+        drawInteractiveScatterplot(fig_1_data, "fig-1-div", used_palette, "Tableau (optimal assignment) with Tableau Highlighter", labelToClass)
+
+        used_palette = fig_1_ours.slice()
+        drawInteractiveScatterplot(fig_1_data, "fig-1-div", used_palette, "Our Context-preserving Highlighting", labelToClass)
+
+        // Fig.14
+        bgcolor = d3.rgb(9, 38, 110)
+        Tableau_10_palette_muted = Tableau_10_palette_blue
+        tableau_10 = {}
+        for (let i = 0; i < Tableau_10_palette.length; i++) {
+            tableau_10[Tableau_10_palette[i]] = Tableau_10_palette_muted[i]
+        }
+        used_palette = fig_1_tableau_optimal.slice()
+        for (let i = 0; i < class_number; i++) {
+            used_palette[i + class_number] = tableau_10[used_palette[i]]
+        }
+        drawInteractiveScatterplot(fig_1_data, "fig-14-div", used_palette, "Tableau (optimal assignment) with Tableau Highlighter", labelToClass)
+
+        used_palette = fig_14_ours.slice()
+        drawInteractiveScatterplot(fig_1_data, "fig-14-div", used_palette, "Our Context-preserving Highlighting", labelToClass)
+    }
+
+    const intervalId_1 = setInterval(function () {
+        if (fig_1_data.length > 0) {
+            let labelToClass = fig_1_data[1]
+            fig_1_data = fig_1_data[0]
+            clearInterval(intervalId_1)
+            drawFigs(labelToClass)
+        }
+    }, 500)
+
+
+    // Fig.15 
+    fig_15_data = []
+    loadData("mnist-1000.csv", fig_15_data)
+
+    function drawFigs15(labelToClass) {
+        bgcolor = "#fff"
+        // Fig.1
+        Tableau_10_palette_muted = Tableau_10_palette_white
+        tableau_10 = {}
+        for (let i = 0; i < Tableau_10_palette.length; i++) {
+            tableau_10[Tableau_10_palette[i]] = Tableau_10_palette_muted[i]
+        }
+
+        let class_number = Object.keys(labelToClass).length
+        let used_palette = fig_15_random_tableau.slice()
+        for (let i = 0; i < class_number; i++) {
+            used_palette[i + class_number] = "#ccc"
+        }
+        drawInteractiveScatterplot(fig_15_data, "fig-15-div", used_palette, "Tableau (default assignment) with Canonical Highlighting", labelToClass)
+
+        used_palette = fig_15_palettailor.slice()
+        for (let i = 0; i < class_number; i++) {
+            let hsl = d3.hsl(used_palette[i])
+            used_palette[i + class_number] = d3.hsl(hsl.h, hsl.s, 0.9)
+        }
+        drawInteractiveScatterplot(fig_15_data, "fig-15-div", used_palette, "Palettailor with Lightness Adjustment", labelToClass)
+
+        used_palette = fig_15_palettailor.slice()
+        for (let i = 0; i < class_number; i++) {
+            used_palette[i + class_number] = used_palette[i]
+        }
+        drawInteractiveScatterplot(fig_15_data, "fig-15-div", used_palette, "Palettailor with Alpha Blending", labelToClass, 1)
+
+        used_palette = fig_15_optimal_tableau.slice()
+        for (let i = 0; i < class_number; i++) {
+            used_palette[i + class_number] = tableau_10[used_palette[i]]
+        }
+        drawInteractiveScatterplot(fig_15_data, "fig-15-div", used_palette, "Tableau (optimal assignment) with Tableau Highlighter", labelToClass)
+
+        used_palette = fig_15_ours.slice()
+        drawInteractiveScatterplot(fig_15_data, "fig-15-div", used_palette, "Our Context-preserving Highlighting", labelToClass)
+
+    }
+
+    const intervalId_2 = setInterval(function () {
+        if (fig_15_data.length > 0) {
+            let labelToClass = fig_15_data[1]
+            fig_15_data = fig_15_data[0]
+            clearInterval(intervalId_2)
+            drawFigs15(labelToClass)
+        }
+    }, 500)
+
+
+    // Fig.16 
+    fig_16_data = []
+    loadData("AirQualityUCI.csv", fig_16_data)
+
+    function drawFigs16(labelToClass) {
+        bgcolor = "#fff"
+        svg_width = 700
+        svg_height = 500
+        SVGWIDTH = svg_width + svg_margin.left + svg_margin.right
+        SVGHEIGHT = svg_height + svg_margin.top + svg_margin.bottom
+
+        // Fig.1
+        Tableau_10_palette_muted = Tableau_10_palette_white
+        tableau_10 = {}
+        for (let i = 0; i < Tableau_10_palette.length; i++) {
+            tableau_10[Tableau_10_palette[i]] = Tableau_10_palette_muted[i]
+        }
+
+        let class_number = Object.keys(labelToClass).length
+        let used_palette = fig_16_line_tableau.slice()
+        for (let i = 0; i < class_number; i++) {
+            used_palette[i + class_number] = tableau_10[used_palette[i]]
+        }
+        drawInteractiveLinechart(fig_16_data, "fig-16-div", used_palette, "Tableau (optimal assignment) with Tableau Highlighter", labelToClass)
+
+        used_palette = fig_16_line_ours.slice()
+        drawInteractiveLinechart(fig_16_data, "fig-16-div", used_palette, "Our Context-preserving Highlighting", labelToClass)
+
+    }
+
+    const intervalId_3 = setInterval(function () {
+        if (fig_16_data.length > 0) {
+            let labelToClass = fig_16_data[1]
+            fig_16_data = fig_16_data[0]
+            clearInterval(intervalId_3)
+            drawFigs16(labelToClass)
+        }
+    }, 500)
+</script>
+
+<script>
+    // draw scatterplot matrix
+    function drawScatterplotMatrix(divId, palette) {
+        var size = 230,
+            padding = 20;
+
+        var x = d3.scaleLinear()
+            .range([padding / 2, size - padding / 2]);
+
+        var y = d3.scaleLinear()
+            .range([size - padding / 2, padding / 2]);
+
+        var xAxis = d3.axisBottom()
+            .scale(x)
+            .ticks(6);
+
+        var yAxis = d3.axisLeft()
+            .scale(y)
+            .ticks(6);
+
+        // var color = d3.scaleOrdinal(d3.schemeCategory10);
+        let getLabel = function (d) {
+            return d["LITH"]
+        }
+
+        d3.csv("../data/Xeek_Well_data (1).csv", function (error, data) {
+            if (error) throw error;
+
+            let labelSet = new Set();
+            data = data.filter(function (d) {
+                labelSet.add(getLabel(d))
+                return d['GR'] != '' && +d['GR'] <= 120 && d['NPHI'] != '' && d['DTC'] != '' && d['RHOB'] != ''
+            })
+            let labelToClass = getLabelToClassMapping(labelSet);
+
+            // console.log("filtered:", data);
+            var domainByTrait = {},
+                traits = d3.keys(data[0]).filter(function (d) {
+                    return d == "RHOB" || d == "GR" || d == "NPHI"// || d == "DTC";
+                }),
+                n = traits.length;
+
+            traits.forEach(function (trait) {
+                domainByTrait[trait] = d3.extent(data, function (d) { return +d[trait]; });
+            });
+            // data = output_data_global
+            // console.log("traits:", traits);
+
+            xAxis.tickSize(size * n);
+            yAxis.tickSize(-size * n);
+
+            var brush = d3.brush()
+                .on("start", brushstart)
+                .on("brush", brushmove)
+                .on("end", brushend)
+                .extent([[0, 0], [size, size]]);
+
+            var svg = d3.select("#" + divId).append("svg")
+                .attr("width", size * n + padding * 2)
+                .attr("height", size * n + padding * 2)
+                .append("g")
+                .attr("transform", "translate(" + padding + "," + padding / 2 + ")");
+
+            svg.selectAll(".x.axis")
+                .data(traits)
+                .enter().append("g")
+                .attr("class", "x axis")
+                .attr("transform", function (d, i) { return "translate(" + (n - i - 1) * size + ",0)"; })
+                .each(function (d) { x.domain(domainByTrait[d]); d3.select(this).call(xAxis); });
+
+            svg.selectAll(".y.axis")
+                .data(traits)
+                .enter().append("g")
+                .attr("class", "y axis")
+                .attr("transform", function (d, i) { return "translate(0," + i * size + ")"; })
+                .each(function (d) { y.domain(domainByTrait[d]); d3.select(this).call(yAxis); });
+
+            var cell = svg.selectAll(".cell")
+                .data(cross(traits, traits))
+                .enter().append("g")
+                .attr("class", "cell")
+                .attr("transform", function (d) { return "translate(" + (n - d.i - 1) * size + "," + d.j * size + ")"; })
+                .each(plot);
+
+            // Titles for the diagonal.
+            cell.filter(function (d) { return d.i === d.j; }).append("text")
+                .attr("x", padding)
+                .attr("y", padding)
+                .attr("dy", ".71em")
+                .text(function (d) { return d.x; });
+
+            cell.call(brush);
+
+            cell.selectAll(".selection").style("fill-opacity", 0).style("stroke", "#ccc").style("stroke-width", "4")
+
+            function plot(p) {
+                // console.log(p);
+                var cell = d3.select(this);
+
+                x.domain(domainByTrait[p.x]);
+                y.domain(domainByTrait[p.y]);
+
+                cell.append("rect")
+                    .attr("class", "frame")
+                    .attr("x", padding / 2)
+                    .attr("y", padding / 2)
+                    .attr("width", size - padding)
+                    .attr("height", size - padding);
+
+                cell.selectAll("circle")
+                    .data(data)
+                    .enter().append("circle")
+                    .attr("id", function (d) { return "class_" + labelToClass[getLabel(d)]; })
+                    .attr("cx", function (d) { return x(d[p.x]); })
+                    .attr("cy", function (d) { return y(d[p.y]); })
+                    .attr("r", 4)
+                    .attr("fill", function (d) {
+                        return palette[labelToClass[getLabel(d)]];
+                    })
+                    .attr("item-color", function (d) {
+                        return palette[labelToClass[getLabel(d)]];
+                    })
+                    .attr("faint-color", function (d) {
+                        return palette[labelToClass[getLabel(d)] + palette.length / 2];
+                    })
+            }
+
+            var brushCell;
+
+            // Clear the previously-active brush, if any.
+            function brushstart(p) {
+                if (brushCell !== this) {
+                    d3.select(brushCell).call(brush.move, null);
+                    brushCell = this;
+                    x.domain(domainByTrait[p.x]);
+                    y.domain(domainByTrait[p.y]);
+                }
+            }
+            // Highlight the selected circles.
+            function brushmove(p) {
+                var e = d3.brushSelection(this);
+                svg.selectAll("circle").attr("fill", function (d) {
+
+                    if (!e) {
+                        return d3.select(this).attr("item-color")
+                    } else {
+                        if (
+                            e[0][0] > x(+d[p.x]) || x(+d[p.x]) > e[1][0]
+                            || e[0][1] > y(+d[p.y]) || y(+d[p.y]) > e[1][1]
+                        ) {
+                            // d3.select(this).lower()
+                            return d3.select(this).attr("faint-color")
+                        } else {
+                            d3.select(this).raise()
+                            return d3.select(this).attr("item-color")
+                        }
+                    }
+                })
+
+                svg.selectAll("rect").raise()
+            }
+
+            // If the brush is empty, select all circles.
+            function brushend() {
+                var e = d3.brushSelection(this);
+                if (e === null) svg.selectAll("circle").attr("fill", function (d) {
+                    return d3.select(this).attr("item-color")
+                });
+            }
+
+        });
+
+        function cross(a, b) {
+            var c = [], n = a.length, m = b.length, i, j;
+            for (i = -1; ++i < n;) for (j = -1; ++j < m;) c.push({ x: a[i], i: i, y: b[j], j: j });
+            return c;
+        }
+
+        // append the palette
+        let palette_results_div = d3.select("#" + divId).append("div")
+        let palette_size = palette.length / 2
+        for (let i = 0; i < palette_size; i++) {
+            // assemble a color
+            let span = palette_results_div.append("span").attr("class", "rect").attr("id", "rect-" + i)
+                .style("width", "30px").style("height", "30px").style("display", "inline-block")
+                .style("margin-left", "10px").style("background", palette[i]).attr("color", palette[i])
+                .style("text-align", "center").style("padding", "5px").attr("isHighlighted", 0)
+                .on("click", function () {
+                    d3.select(this).attr("isHighlighted", 1 - d3.select(this).attr("isHighlighted"))
+                    if (+d3.select(this).attr("isHighlighted")) {
+                        d3.select(this)
+                            .style("border", "4px solid #444");
+                    } else {
+                        d3.select(this)
+                            .style("border", "0px solid #444");
+                    }
+                    for (let j = 0; j < palette_size; j++) {
+                        if (!(+palette_results_div.select("#rect-" + j).attr("isHighlighted"))) {
+                            d3.select("#" + divId).selectAll("#class_" + j)
+                                .attr("fill", function () {
+                                    return palette[j + palette_size];
+                                })
+                        }
+                        else {
+                            d3.select("#" + divId).selectAll("#class_" + j)
+                                .attr("fill", function () {
+                                    return palette[j];
+                                })
+                                .raise();
+                        }
+                    }
+                })
+        }
+
+    }
+
+
+    tableau_optimal_matrix_palette = ['#edc948', '#4e79a7', '#f28e2b', '#e15759', '#59a14f', '#76b7b2', '#b07aa1', '#f2ebd4', '#d5dde5', '#f3e1ce', '#f0d6d7', '#d7e4d5', '#dce8e7', '#e7dde4']
+    drawScatterplotMatrix("tableauHighlighterDiv", tableau_optimal_matrix_palette)
+
+    let class_number = Math.floor(tableau_optimal_matrix_palette.length / 2)
+    tableau_default_matrix_palette = Tableau_10_palette.slice(0, class_number)
+    // Tableau 10 default + D3
+    for (let i = 0; i < class_number; i++) {
+        tableau_default_matrix_palette[i + class_number] = "#ccc"
+    }
+    drawScatterplotMatrix("d3v4matrixDiv", tableau_default_matrix_palette)
+
+    ours_matrix_palette = ["#8bd7ec", "#a47c7a", "#ffbd3b", "#ef69d2", "#b0e438", "#67a1f7", "#457549", "#ceeef7", "#e8dedd", "#ffedcc", "#f9ccef", "#e7f7c4", "#c0d8fb", "#cfe2d0"]
+    drawScatterplotMatrix("ourDiv", ours_matrix_palette)
+</script>
+
+<script>
+    // vega-lite
+
+    // Assign the specification to a local variable vlSpec.
+    var vlSpec = {
+        "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+        "title": "Seattle Weather, 2012-2015",
+        "data": {
+            "url": "../data/seattle-weather.csv"
+        },
+        "vconcat": [
+            {
+                "encoding": {
+                    "color": {
+                        "condition": {
+                            "param": "brush",
+                            "title": "Weather",
+                            "field": "weather",
+                            "type": "nominal",
+                            "scale": {
+                                "domain": ["sun", "fog", "drizzle", "rain", "snow"],
+                                "range": ["#e7ba52", "#a7a7a7", "#aec7e8", "#1f77b4", "#9467bd"]
+                            }
+                        },
+                        "value": "lightgray"
+                    },
+                    "x": {
+                        "field": "date",
+                        "timeUnit": "monthdate",
+                        "title": "Date",
+                        "axis": { "format": "%b" }
+                    },
+                    "y": {
+                        "title": "Maximum Daily Temperature (C)",
+                        "field": "temp_max",
+                        "scale": { "domain": [-5, 40] },
+                        "type": "quantitative"
+                    }
+                },
+                "width": 800,
+                "height": 400,
+                "mark": "circle",
+                "params": [{
+                    "name": "brush",
+                    "select": { "type": "interval", "encodings": ["x"] }
+                }],
+                "transform": [{ "filter": { "param": "click" } }]
+            },
+            {
+                "encoding": {
+                    "color": {
+                        "condition": {
+                            "param": "click",
+                            "field": "weather",
+                            "scale": {
+                                "domain": ["sun", "fog", "drizzle", "rain", "snow"],
+                                "range": ["#e7ba52", "#a7a7a7", "#aec7e8", "#1f77b4", "#9467bd"]
+                            }
+                        },
+                        "value": "lightgray"
+                    },
+                    "x": { "aggregate": "count" },
+                    "y": { "title": "Weather", "field": "weather" }
+                },
+                "width": 800,
+                "mark": "bar",
+                "params": [{
+                    "name": "click",
+                    "select": { "type": "point", "encodings": ["color"] }
+                }],
+                "transform": [{ "filter": { "param": "brush" } }]
+            }
+        ]
+    }
+
+    // Embed the visualization in the container with id `vis`
+    vegaEmbed('#vegaLiteDiv-render', vlSpec);
+
+    used_palette = ["#ffd341","#1083d5","#21db7c","#ff91ff","#b05500","#fff5d5","#c5e4fa","#dbf9ea","#ffe5ff","#ffd7b2"]
+    let vlSpec_ours = {
+        "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+        "title": "Seattle Weather, 2012-2015",
+        "data": { "url": "../data/seattle-weather.csv" },
+        "transform": [{ "calculate": "datum.weather + \"-dehighlight\"", "as": "weather2" }],
+        "vconcat": [
+            {
+                "encoding": {
+                    "color": {
+                        "condition": { "param": "brush", "field": "weather" },
+                        "field": "weather2",
+                        "type": "nominal",
+                        "scale": {
+                            "domain": [
+                                "sun",
+                                "fog",
+                                "drizzle",
+                                "rain",
+                                "snow",
+                                "sun-dehighlight",
+                                "fog-dehighlight",
+                                "drizzle-dehighlight",
+                                "rain-dehighlight",
+                                "snow-dehighlight"
+                            ],
+                            "range": used_palette
+                        }
+                    },
+                    "x": {
+                        "field": "date",
+                        "timeUnit": "monthdate",
+                        "title": "Date",
+                        "axis": { "format": "%b" }
+                    },
+                    "y": {
+                        "title": "Maximum Daily Temperature (C)",
+                        "field": "temp_max",
+                        "scale": { "domain": [-5, 40] },
+                        "type": "quantitative"
+                    }
+                },
+                "width": 800,
+                "height": 400,
+                "mark": "circle",
+                "params": [
+                    { "name": "brush", "select": { "type": "interval", "encodings": ["x"] } }
+                ],
+                "transform": [{ "filter": { "param": "click" } }]
+            },
+            {
+                "encoding": {
+                    "color": {
+                        "condition": {
+                            "param": "click",
+                            "field": "weather"
+                        },
+                        "field": "weather2",
+                        "type": "nominal"
+                    },
+                    "x": { "aggregate": "count" },
+                    "y": { "title": "Weather", "field": "weather" }
+                },
+                "width": 800,
+                "mark": "bar",
+                "params": [
+                    { "name": "click", "select": { "type": "point", "encodings": ["color"] } }
+                ],
+                "transform": [{ "filter": { "param": "brush" } }]
+            }
+        ]
+    }
+    vegaEmbed('#ourMultiViewDiv-render', vlSpec_ours);
+</script>
