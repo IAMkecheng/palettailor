@@ -42,7 +42,7 @@ var lightnessFilterBar = d3.select('#lightnessFilterBar').attr("width", 180).att
     .attr('height', 2 * m_height / 3);
 
   let lightness_high = 95,
-    lightness_low = 35;
+    lightness_low = 45;
 
   var dragExtent = lightnessFilterBar_group.append('rect')
     .attr("x", stripeX(lightness_low))
@@ -89,11 +89,11 @@ var lightnessFilterBar = d3.select('#lightnessFilterBar').attr("width", 180).att
   }
 
   lowerDrag.call(d3.drag().on("drag", draggedLower).on("end", function() {
-    prepareKnnTreeColors(hue_range_global_1);
+    // prepareKnnTreeColors(hue_range_global_1);
     // prepareColors(hue_range_global_1);
   }));
   upperDrag.call(d3.drag().on("drag", draggedUpper).on("end", function() {
-    prepareKnnTreeColors(hue_range_global_1);
+    // prepareKnnTreeColors(hue_range_global_1);
     // prepareColors(hue_range_global_1);
   }));
 

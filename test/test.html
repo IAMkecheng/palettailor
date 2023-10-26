@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Palettailor Release Test</title>
+
+    <script type="text/javascript" src="d3.v4.min.js"></script>
+    <script type="text/javascript" src="d3.color.min.js"></script>
+    <!-- <script type="text/javascript" src="palettailor-scatterplot.js"></script> -->
+    <script type="text/javascript" src="palettailor-withoutData.js"></script>
+</head>
+
+<body>
+    <div id="renderDiv"></div>
+</body>
+
+<script>
+    let bgcolor = "#fff";
+    let svg_margin = {
+        top: 20,
+        right: 20,
+        bottom: 80,
+        left: 20
+    },
+        radius = 6,
+        SVGWIDTH = 540,
+        SVGHEIGHT = 600;
+    let svg_width = SVGWIDTH - svg_margin.left - svg_margin.right,
+        svg_height = SVGHEIGHT - svg_margin.top - svg_margin.bottom;
+    let xScale = d3.scaleLinear().range([0, svg_width]), // value -> display
+        xMap = function (d) {
+            return xScale(d.x);
+        }, // data -> display
+        xAxis = d3.axisBottom().scale(xScale).ticks(0);
+    let yScale = d3.scaleLinear().range([svg_height, 0]), // value -> display
+        yMap = function (d) {
+            return yScale(d.y);
+        }, // data -> display
+        yAxis = d3.axisLeft().scale(yScale).ticks(0);
+
+    d3.text("scatterplot.csv", function (error, text) {
+        if (error) throw error;
+        //parse pure text to data, and cast string to number
+        let data = d3.csvParseRows(text, function (d) {
+            if (!isNaN(d[0]) && !isNaN(d[1])) {
+                return d; //.map(Number);
+            }
+        }).map(function (d) { // change the array to an object, use the first two feature as the position
+            //source data
+            var row = {};
+            row.label = d[2];
+            row.x = +d[0];
+            row.y = +d[1];
+            return row;
+        });
+        xScale.domain(d3.extent(data, d => d.x));
+        yScale.domain(d3.extent(data, d => d.y));
+
+        // let palettailor = new Palettailor(data, [1, 1, 1], svg_width, svg_height)
+        let palettailor = new Palettailor(10, [1, 1, 1])
+        let palette = palettailor.run;
+
+        let scatterplot_svg = d3.select("#renderDiv").append("svg")
+            .attr("width", SVGWIDTH).attr("height", SVGHEIGHT).style("margin-right", "50px")
+        let scatterplot = scatterplot_svg.style("background-color", bgcolor).append("g")
+            .attr("transform", "translate(" + svg_margin.left + "," + svg_margin.top + ")");
+        // draw dots
+        let dots = scatterplot.append("g").selectAll(".dot")
+            .data(data)
+            .enter().append("circle")
+            .attr("class", "dot")
+            .attr("r", radius)
+            .attr("cx", xMap)
+            .attr("cy", yMap)
+            .attr("fill", function (d) {
+                return palette[d.label];
+            })
+            .attr("item-color", function (d) {
+                return palette[d.label];
+            })
+        // add the x Axis
+        scatterplot.append("g")
+            .attr("transform", "translate(0," + svg_height + ")")
+            .call(d3.axisBottom(xScale).tickFormat(""));
+
+        // add the y Axis
+        scatterplot.append("g")
+            .call(d3.axisLeft(yScale).tickFormat(""));
+    });
+
+</script>
+
+</html>

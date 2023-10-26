@@ -29,6 +29,15 @@
   <script src="css/scripts.js"></script>
   <!-- bootstrap -->
   <script src="css/bootstrap.min.js"></script>
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-RZZBZ64XPG"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+
+    gtag('config', 'G-RZZBZ64XPG');
+  </script>
 </head>
 
 <body>
@@ -82,7 +91,8 @@
                   <div class="task-info">
                     <div class="desc">
                       <i class="icon_datareport"></i> &nbsp;&nbsp;
-                      Bar Chart Example </div>
+                      Bar Chart Example
+                    </div>
                   </div>
                 </a>
               </li>
@@ -125,7 +135,8 @@
                   <div class="task-info">
                     <div class="desc">
                       <i class="icon_datareport"></i> &nbsp;&nbsp;
-                      Bar Chart Data </div>
+                      Bar Chart Data
+                    </div>
                   </div>
                 </a>
               </li>
@@ -145,6 +156,13 @@
           Load Data
           First.</span>&nbsp;&nbsp;<i class="icon_error-triangle_alt"></i></div>
 
+      <div style="float: left;margin-top: 15px; margin-left: 100px;font-size: 16pt;">
+        <a href="./highlighting/index.html" target="_blank">
+          <i class="icon_link"></i>
+          <b>&nbsp;&nbsp; Go to Palettailor for Highlighting.</b>
+        </a>
+
+      </div>
 
       <div class="top-nav notification-row">
         <!-- notificatoin dropdown start-->
@@ -292,33 +310,6 @@
               </li>
             </ul>
           </li>
-
-          <li class="sub-menu">
-            <a href="javascript:;" class="">
-              <i class="icon_circle-slelected"></i>
-              <span>Color Blindness(test)</span>
-              <span class="menu-arrow arrow_carrot-right"></span>
-            </a>
-            <ul class="sub">
-              <li>
-                <div class="menu-sidebar-div" style="padding-left: 32px;">
-                  <label><strong>Types: &nbsp; </strong> </label>
-                  <div>
-                    <label><input type="radio" name="colorblindType" value="Normal" checked />Normal</label><br>
-                    <label><input type="radio" name="colorblindType" value="Protanopia" />Protanopia</label><br>
-                    <label><input type="radio" name="colorblindType" value="Protanomaly" />Protanomaly</label><br>
-                    <label><input type="radio" name="colorblindType" value="Deuteranopia" />Deuteranopia</label><br>
-                    <label><input type="radio" name="colorblindType" value="Deuteranomaly" />Deuteranomaly</label><br>
-                    <label><input type="radio" name="colorblindType" value="Tritanopia" />Tritanopia</label><br>
-                    <label><input type="radio" name="colorblindType" value="Tritanomaly" />Tritanomaly</label><br>
-                    <label><input type="radio" name="colorblindType" value="Achromatopsia" />Achromatopsia</label><br>
-                    <label><input type="radio" name="colorblindType" value="Achromatomaly" />Achromatomaly</label>
-                  </div>
-                </div>
-              </li>
-            </ul>
-          </li>
-
         </ul>
         <!-- sidebar menu end-->
       </div>
@@ -423,11 +414,8 @@
 
 <script type="text/javascript" src="js/lib/d3.color.min.js"></script>
 <script type="text/javascript" src="js/lib/c3.min.js"></script>
-<script type="text/javascript" src="js/lib/hcirn_colorblind_simulation.js"></script>
 
 <script type="text/javascript" src="js/global.js"></script>
-<script type="text/javascript" src="js/flann.js"></script>
-<script type="text/javascript" src="js/asIllustration.js"></script>
 <script type="text/javascript" src="js/utils.js"></script>
 <script type="text/javascript" src="js/lightnessFilter.js"></script>
 <script type="text/javascript" src="js/dataLoader.js"></script>
@@ -435,6 +423,7 @@
 <script type="text/javascript" src="js/optimizeFunc.js"></script>
 
 <script type="text/javascript" src="js/index.js"></script>
+<script type="text/javascript" src="js/asIllustration.js"></script>
 
 
 </html>

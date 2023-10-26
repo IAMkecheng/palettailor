@@ -118,14 +118,8 @@ function processScatterData(data) {
 
     xScale.domain([d3.min(data, xValue), d3.max(data, xValue)]);
     yScale.domain([d3.min(data, yValue), d3.max(data, yValue)]);
-    // cd_weight = calculateAlphaShape(data, [[0, 0], [svg_width, svg_height]]);
-
-    cd_weight_as = calculateAlphaShape(data, [[0, 0], [svg_width, svg_height]]);
-    console.log("AS weight:", cd_weight_as);
+    cd_weight = calculateAlphaShape(data, [[0, 0], [svg_width, svg_height]]);
     
-    // cd_weight_knng = getKNNGDistance(data);
-    // console.log("KNNG weight:", cd_weight_knng);
-    cd_weight = cd_weight_as;
     // // if already have a svg, then insert it to the history
     // addToHistory();
     // showVoronoi(data, [[0, 0], [svg_width, svg_height]]);

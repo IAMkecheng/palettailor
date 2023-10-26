@@ -112,43 +112,20 @@ function renderResult() {
   document.querySelector('#running').classList.remove('hide');
 
   setTimeout(() => {
-    let palette = doColorization();
+    let palette;
     //scatterplot
     if (DATATYPE === "SCATTERPLOT") {
-      appendScatterplot(palette);
+      palette = appendScatterplot();
     }
 
     //bar chart
     if (DATATYPE === "BARCHART") {
-      appendBarchart(palette);
+      palette = appendBarchart();
     }
 
     //line chart
     if (DATATYPE === "LINECHART") {
-      appendLinechart(palette);
-    }
-
-    if (color_blind_type != "Normal") {
-      let tmp = [];
-      for (let i = 0; i < palette.length; i++) {
-        let c = d3.rgb(palette[i]);
-        let c1 = fBlind[color_blind_type]([parseInt(c.r), parseInt(c.g), parseInt(c.b)]);
-        tmp.push(d3.rgb(c1[0], c1[1], c1[2]));
-      }
-      //scatterplot
-      if (DATATYPE === "SCATTERPLOT") {
-        appendScatterplot(tmp);
-      }
-
-      //bar chart
-      if (DATATYPE === "BARCHART") {
-        appendBarchart(tmp);
-      }
-
-      //line chart
-      if (DATATYPE === "LINECHART") {
-        appendLinechart(tmp);
-      }
+      palette = appendLinechart();
     }
 
     // draw the palette
@@ -159,7 +136,8 @@ function renderResult() {
   }, 0);
 }
 
-function appendScatterplot(used_palette) {
+function appendScatterplot() {
+  let used_palette = doColorization();
 
   let scatterplot_svg = d3.select("#renderDiv").append("svg")
     .attr("width", SVGWIDTH).attr("height", SVGHEIGHT);
@@ -179,9 +157,12 @@ function appendScatterplot(used_palette) {
     .attr("fill", function (d, i) {
       return used_palette[labelToClass[cValue(d)]];
     });
+  return used_palette;
 }
 
-function appendBarchart(used_palette) {
+function appendBarchart() {
+  let used_palette = doColorization();
+
   let data = [];
   for (let i of source_data) {
     data.push(i.y);
@@ -254,9 +235,11 @@ function appendBarchart(used_palette) {
   //   .attr("r", radius)
   //   .style("stroke", "#fff")
   //   .style("fill", function (d) { return used_palette[labelToClass[d.label]] });
+  return used_palette;
 }
 
-function appendLinechart(used_palette) {
+function appendLinechart() {
+  let used_palette = doColorization();
 
   let linechart_svg = d3.select("#renderDiv").append("svg")
     .attr("width", SVGWIDTH).attr("height", SVGHEIGHT);
@@ -345,6 +328,7 @@ function appendLinechart(used_palette) {
     .style("stroke", "#fff")
     .style("fill", function (d) { return used_palette[labelToClass[d.label]] });
 
+  return used_palette;
 }
 
 function appendPaletteResult(palette) {
@@ -388,13 +372,13 @@ function appendPaletteResult(palette) {
 function outputPalette(palette) {
   //output the palette
   var format = resultsColorSpace,
-    paletteStr = "[",
-    data_palette_attr = "";
+      paletteStr = "[",
+      data_palette_attr = "";
   for (let i = 0; i < palette.length - 1; i++) {
-    paletteStr += "" + colorConversionFns[format](palette[i]) + ",";
-    data_palette_attr += palette[i] + ";";
+      paletteStr += "\"" + colorConversionFns[format](palette[i]) + "\",";
+      data_palette_attr += palette[i] + ";";
   }
-  paletteStr += "" + colorConversionFns[format](palette[palette.length - 1]) + "]";
+  paletteStr += "\"" + colorConversionFns[format](palette[palette.length - 1]) + "\"]";
   data_palette_attr += palette[palette.length - 1];
   d3.select("#paletteText").property('value', paletteStr).attr('data-palette', data_palette_attr);
 }

@@ -20,15 +20,12 @@ function doColorization() {
             id++;
         });
 
-    color_blind_type = document.querySelector('input[name = "colorblindType"]:checked').value;
-    console.log(color_blind_type);
-
     let best_color;
     if (blank_pos.length === 0 || blank_pos.length === class_number) {
-        best_color = simulatedAnnealing2FindBestPalette(class_number, (new_palette) => evaluatePaletteTwice(new_palette), colors_scope);
+        best_color = simulatedAnnealing2FindBestPalette(class_number, (new_palette) => evaluatePalette(new_palette), colors_scope);
     }
     else {
-        best_color = completePalette(origin_palette, blank_pos, (new_palette) => evaluatePaletteTwice(new_palette), colors_scope);
+        best_color = completePalette(origin_palette, blank_pos, (new_palette) => evaluatePalette(new_palette), colors_scope);
     }
 
     let used_palette = new Array(class_number);
@@ -38,9 +35,6 @@ function doColorization() {
 
     // if already have a svg, then insert it to the history
     addToHistory();
-
-    // draw iteration v.s. E(P)
-    // drawLineChart(iteration_data, "lineChart_svg");
 
     return used_palette;
 }
@@ -77,13 +71,6 @@ function evaluatePalette(palette) {
             let nd = getNameDifference(palette[i], palette[j]);
             name_difference += nd;
             color_discrimination_constraint = (color_discrimination_constraint > dis) ? dis : color_discrimination_constraint;
-
-            if (isNaN(class_discriminability) || isNaN(class_discriminability) || isNaN(class_discriminability)) {
-                class_discriminability = 0;
-                name_difference = 0;
-                color_discrimination_constraint = 0;
-                return 0;
-            }
         }
         dis = d3_ciede2000(d3.lab(palette[i]), d3.lab(d3.rgb(bgcolor)));
         color_discrimination_constraint = (color_discrimination_constraint > dis) ? dis : color_discrimination_constraint;
@@ -94,28 +81,6 @@ function evaluatePalette(palette) {
     name_difference /= palette.length * (palette.length - 1) * 0.25;
 
     return (score_importance_weight[0] * class_discriminability + score_importance_weight[1] * name_difference + score_importance_weight[2] * (color_discrimination_constraint * 0.1));
-}
-
-/**
- * adding color vision deficiency
- */
-function evaluatePaletteTwice(palette) {
-    // normal vision
-    let normal_score = evaluatePalette(palette);
-
-    // color blindness
-    let cb_score = 0, lamda = 1.0;
-    if (color_blind_type != "Normal") {
-        let tmp = [];
-        for (let i = 0; i < palette.length; i++) {
-            let c = d3.rgb(palette[i]);
-            let c1 = fBlind[color_blind_type]([parseInt(c.r), parseInt(c.g), parseInt(c.b)]);
-            tmp.push(d3.rgb(c1[0], c1[1], c1[2]));
-        }
-        cb_score = evaluatePalette(tmp);
-        lamda = 0.4;
-    }
-    return lamda * normal_score + (1 - lamda) * cb_score;
 }
 
 /**
@@ -143,14 +108,6 @@ function simulatedAnnealing2FindBestPalette(palette_size, evaluateFunc, colors_s
     },
         preferredObj = o;
 
-    // test-start
-    iteration_data = [];
-    iteration_data.push({
-        id: iterate_times,
-        score: o.score
-    });
-    // test-end
-
     color_names_checked = collectColorNames();
     while (cur_temper > end_temper) {
         for (let i = 0; i < 1; i++) {//disturb at each temperature
@@ -169,13 +126,6 @@ function simulatedAnnealing2FindBestPalette(palette_size, evaluateFunc, colors_s
                 if (preferredObj.score - o.score < 0) {
                     preferredObj = o;
                 }
-                // test-start
-                if (o.score > 0)
-                    iteration_data.push({
-                        id: iterate_times,
-                        score: o.score
-                    });
-                // test-end
             }
             if (iterate_times > max_iteration_times) {
                 break;
@@ -184,7 +134,7 @@ function simulatedAnnealing2FindBestPalette(palette_size, evaluateFunc, colors_s
 
         cur_temper *= dec;
     }
-
+    
     return preferredObj;
 }
 

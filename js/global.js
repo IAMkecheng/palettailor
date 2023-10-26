@@ -24,7 +24,7 @@ let Tableau_10_palette = ["#4E79A7", "#F28E2B", "#E15759", "#76B7B2", "#59A14F",
 let CIEDE2000_scope = [0.026370677103770744, 118.6699864811677];
 let criterion_cd = -1.0;
 let locked_pos, data_changed_sign = false;
-let color_names_checked, color_blind_type;
+let color_names_checked;
 let best_color_names = {
     "brown": d3.rgb(100, 53, 0), "orange": d3.rgb(255, 118, 2), "yellow": d3.rgb(255, 246, 3), "red": d3.rgb(255, 30, 32),
     "pink": d3.rgb(255, 147, 205), "blue": d3.rgb(5, 74, 255), "green": d3.rgb(14, 160, 46), "grey": d3.rgb(143, 136, 135),
